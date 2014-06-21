@@ -4,6 +4,7 @@ import cz.hatoff.geofort.feeder.configuration.QueueConfiguration;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class MainApplication {
@@ -22,6 +23,7 @@ public class MainApplication {
         logger.info("Starting geofort-feeder.");
         logger.info("Loading application context and initializing singletons.");
         context = new ClassPathXmlApplicationContext("spring-config.xml");
+        ((AbstractApplicationContext) context).registerShutdownHook();
 
     }
 }
