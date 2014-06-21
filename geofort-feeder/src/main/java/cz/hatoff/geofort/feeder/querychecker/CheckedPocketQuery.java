@@ -3,12 +3,12 @@ package cz.hatoff.geofort.feeder.querychecker;
 
 import java.net.URL;
 
-public class PocketQuery {
+public class CheckedPocketQuery {
 
     private String queryName;
     private URL downloadUrl;
 
-    public PocketQuery(String queryName, URL downloadUrl) {
+    public CheckedPocketQuery(String queryName, URL downloadUrl) {
         this.queryName = queryName;
         this.downloadUrl = downloadUrl;
     }

@@ -10,8 +10,6 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.regex.Pattern;
 
-import javax.mail.*;
-
 
 @Component
 public class QueryCheckingGmailService implements QueryCheckingService {
@@ -27,16 +25,15 @@ public class QueryCheckingGmailService implements QueryCheckingService {
     @Autowired
     private PocketQueryEmailParser pocketQueryEmailParser;
 
-    @Resource(name = "pocketQueryQueue")
-    private BlockingQueue<PocketQuery> pocketQueryQueue;
+    @Resource(name = "checkedQueryQueue")
+    private BlockingQueue<CheckedPocketQuery> checkedPocketQueryQueue;
 
     @Override
     public void checkForNewLinks() {
         logger.info("Checking for new links.");
         Set<Email> emails = pocketQueryEmailDownloader.downloadPocketQueryEmails();
-        Set<PocketQuery> pocketQueries = pocketQueryEmailParser.parseMessagesToPocketQueries(emails);
-        pocketQueryQueue.addAll(pocketQueries);
+        Set<CheckedPocketQuery> pocketQueries = pocketQueryEmailParser.parseMessagesToPocketQueries(emails);
+        checkedPocketQueryQueue.addAll(pocketQueries);
     }
-
 
 }

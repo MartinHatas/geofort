@@ -19,9 +19,9 @@ public class PocketQueryEmailParser {
 
     private static final Logger logger = Logger.getLogger(PocketQueryEmailParser.class);
 
-    private Set<PocketQuery> pocketQueries = new HashSet<PocketQuery>();
+    private Set<CheckedPocketQuery> pocketQueries = new HashSet<CheckedPocketQuery>();
 
-    public Set<PocketQuery> parseMessagesToPocketQueries(Set<Email> emails) {
+    public Set<CheckedPocketQuery> parseMessagesToPocketQueries(Set<Email> emails) {
         logger.info(String.format("Going to parse '%d' pocket query emails.", emails.size()));
 
         for (Email email : emails) {
@@ -38,8 +38,8 @@ public class PocketQueryEmailParser {
     }
 
     private void createPocketQuery(String queryName, URL downloadUrl) {
-        PocketQuery pocketQuery = new PocketQuery(queryName, downloadUrl);
-        pocketQueries.add(pocketQuery);
+        CheckedPocketQuery checkedPocketQuery = new CheckedPocketQuery(queryName, downloadUrl);
+        pocketQueries.add(checkedPocketQuery);
     }
 
     private URL parseQueryDownloadUrl(Email email) throws IOException, MessagingException {
