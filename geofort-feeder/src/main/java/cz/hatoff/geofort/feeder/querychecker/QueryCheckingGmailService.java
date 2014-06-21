@@ -33,8 +33,8 @@ public class QueryCheckingGmailService implements QueryCheckingService {
     @Override
     public void checkForNewLinks() {
         logger.info("Checking for new links.");
-        Set<Message> messages = pocketQueryEmailDownloader.downloadPocketQueryEmails();
-        Set<PocketQuery> pocketQueries = pocketQueryEmailParser.parseMessagesToPocketQueries(messages);
+        Set<Email> emails = pocketQueryEmailDownloader.downloadPocketQueryEmails();
+        Set<PocketQuery> pocketQueries = pocketQueryEmailParser.parseMessagesToPocketQueries(emails);
         pocketQueryQueue.addAll(pocketQueries);
     }
 

@@ -1,13 +1,11 @@
 package cz.hatoff.geofort.feeder.querychecker;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
-import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.io.IOException;
 import java.net.URL;
@@ -23,13 +21,13 @@ public class PocketQueryEmailParser {
 
     private Set<PocketQuery> pocketQueries = new HashSet<PocketQuery>();
 
-    public Set<PocketQuery> parseMessagesToPocketQueries(Set<Message> messages) {
-        logger.info(String.format("Going to parse '%d' pocket query emails.", messages.size()));
+    public Set<PocketQuery> parseMessagesToPocketQueries(Set<Email> emails) {
+        logger.info(String.format("Going to parse '%d' pocket query emails.", emails.size()));
 
-        for (Message message : messages) {
+        for (Email email : emails) {
             try {
-                String queryName = parseQueryName(message);
-                URL downloadUrl = parseQueryDownloadUrl(message);
+                String queryName = parseQueryName(email);
+                URL downloadUrl = parseQueryDownloadUrl(email);
                 if (downloadUrl == null) continue;
                 createPocketQuery(queryName, downloadUrl);
             } catch (Exception e) {
@@ -44,20 +42,20 @@ public class PocketQueryEmailParser {
         pocketQueries.add(pocketQuery);
     }
 
-    private URL parseQueryDownloadUrl(Message message) throws IOException, MessagingException {
-        String messageContent = (String) message.getContent();
+    private URL parseQueryDownloadUrl(Email email) throws IOException, MessagingException {
+        String messageContent = email.getContent();
         Matcher downloadLinkMatcher = QueryCheckingGmailService.DOWNLOAD_LINK_PATTERN.matcher(messageContent);
         if (!downloadLinkMatcher.find()) {
-            logger.warn(String.format("Pocket query download link was not found in email from '%s' with subject '%s'. This message will be skipped.", StringUtils.join(message.getFrom(), ", "), message.getSubject()));
+            logger.warn(String.format("Pocket query download link was not found in email from '%s' with subject '%s'. This email will be skipped.", email.getFrom(), email.getSubject()));
             return null;
         }
         String downloadLink = downloadLinkMatcher.group(1);
-        logger.info(String.format("Successfully found download link '%s' for email from '%s' with subject '%s'", downloadLink, StringUtils.join(message.getFrom(), ", "), message.getSubject()));
+        logger.info(String.format("Successfully found download link '%s' for email from '%s' with subject '%s'", downloadLink, email.getFrom(), email.getSubject()));
         return new URL(downloadLink);
     }
 
-    private String parseQueryName(Message message) throws MessagingException {
-        String subject = message.getSubject();
+    private String parseQueryName(Email email) throws MessagingException {
+        String subject = email.getSubject();
         Matcher queryNameMatcher = QueryCheckingGmailService.SUBJECT_PATTERN.matcher(subject);
         queryNameMatcher.find();
         return queryNameMatcher.group(1);
