@@ -6,7 +6,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.concurrent.BlockingQueue;
+import java.util.Queue;
+
 
 @Component
 public class QueryDownloadGroundspeakService implements QueryDownloadService {
@@ -14,13 +15,17 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
     private static final Logger logger = Logger.getLogger(QueryDownloadGroundspeakService.class);
 
     @Resource(name = "checkedQueryQueue")
-    private BlockingQueue<CheckedPocketQuery> checkedPocketQueryQueue;
+    private Queue<CheckedPocketQuery> checkedPocketQueryQueue;
 
     @Resource(name = "downloadedQueryQueue")
-    private BlockingQueue<DownloadedPocketQuery> downloadedPocketQueryQueue;
+    private Queue<DownloadedPocketQuery> downloadedPocketQueryQueue;
 
     @PostConstruct
     public void init(){
 
+    }
+
+    public void checkForIncomingQueries() {
+        logger.info(String.format("Checking for incoming queries, found '%d'", checkedPocketQueryQueue.size()));
     }
 }

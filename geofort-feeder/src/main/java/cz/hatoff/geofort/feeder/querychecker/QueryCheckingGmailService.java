@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Pattern;
 
 
@@ -26,7 +27,7 @@ public class QueryCheckingGmailService implements QueryCheckingService {
     private PocketQueryEmailParser pocketQueryEmailParser;
 
     @Resource(name = "checkedQueryQueue")
-    private BlockingQueue<CheckedPocketQuery> checkedPocketQueryQueue;
+    private Queue<CheckedPocketQuery> checkedPocketQueryQueue;
 
     @Override
     public void checkForNewLinks() {

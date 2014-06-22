@@ -6,7 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Configuration
@@ -14,12 +16,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class QueueConfiguration {
 
     @Bean(name = "checkedQueryQueue")
-    public BlockingQueue<CheckedPocketQuery> createCheckedPocketQueryQueue() {
-        return new LinkedBlockingQueue<CheckedPocketQuery>();
+    public Queue<CheckedPocketQuery> createCheckedPocketQueryQueue() {
+        return new ConcurrentLinkedQueue<CheckedPocketQuery>();
     }
 
     @Bean(name = "downloadedQueryQueue")
-    public BlockingQueue<DownloadedPocketQuery> createDownloadedPocketQueryQueue() {
-        return new LinkedBlockingQueue<DownloadedPocketQuery>();
+    public Queue<DownloadedPocketQuery> createDownloadedPocketQueryQueue() {
+        return new ConcurrentLinkedQueue<DownloadedPocketQuery>();
     }
 }
