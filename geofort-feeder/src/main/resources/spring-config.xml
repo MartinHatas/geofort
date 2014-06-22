@@ -7,7 +7,6 @@
     <!-- Imports -->
     <import resource="spring-scheduler.xml"/>
 
-
     <!-- Context definition-->
     <context:annotation-config />
     <context:component-scan base-package="cz.hatoff.geofort.feeder.querychecker"/>
@@ -16,7 +15,6 @@
 
     <!-- Configuration beans-->
     <bean class="cz.hatoff.geofort.feeder.configuration.QueueConfiguration"/>
-
 
     <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
         <property name="dataSource" ref="dataSource" />

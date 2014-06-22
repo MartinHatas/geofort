@@ -3,8 +3,8 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
-    <!-- Run every 5 seconds -->
-    <task:scheduled-tasks>
+
+    <task:scheduled-tasks >
         <task:scheduled ref="queryCheckingGmailService" method="checkForNewLinks" cron="*/20 * * * * *" />
         <task:scheduled ref="queryDownloadGroundspeakService" method="checkForIncomingQueries" cron="*/10 * * * * *" />
     </task:scheduled-tasks>
