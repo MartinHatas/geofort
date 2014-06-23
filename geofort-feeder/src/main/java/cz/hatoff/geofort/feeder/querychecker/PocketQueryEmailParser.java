@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import javax.mail.MessagingException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -29,7 +30,8 @@ public class PocketQueryEmailParser {
                 String queryName = parseQueryName(email);
                 URL downloadUrl = parseQueryDownloadUrl(email);
                 if (downloadUrl == null) continue;
-                createPocketQuery(queryName, downloadUrl);
+                Date updateDate = parseUpdateDate(email);
+                createPocketQuery(queryName, downloadUrl, updateDate);
             } catch (Exception e) {
                 logger.error(e);
             }
@@ -37,8 +39,12 @@ public class PocketQueryEmailParser {
         return pocketQueries;
     }
 
-    private void createPocketQuery(String queryName, URL downloadUrl) {
-        CheckedPocketQuery checkedPocketQuery = new CheckedPocketQuery(queryName, downloadUrl);
+    private Date parseUpdateDate(Email email) {
+        return email.getUpdateDate();
+    }
+
+    private void createPocketQuery(String queryName, URL downloadUrl, Date updateDate) {
+        CheckedPocketQuery checkedPocketQuery = new CheckedPocketQuery(queryName, downloadUrl, updateDate);
         pocketQueries.add(checkedPocketQuery);
     }
 

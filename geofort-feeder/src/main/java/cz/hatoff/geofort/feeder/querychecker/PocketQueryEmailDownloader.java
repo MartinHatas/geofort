@@ -73,7 +73,7 @@ public class PocketQueryEmailDownloader {
         Matcher matcher = QueryCheckingGmailService.SUBJECT_PATTERN.matcher(message.getSubject());
         if (matcher.find()){
             logger.info(String.format("Email from '%s' with subject '%s' is OK!", StringUtils.join(message.getFrom(), ", "), message.getSubject()));
-            pocketQueryMessages.add(new Email(StringUtils.join(message.getFrom(), ", "), message.getSubject(), (String) message.getContent()));
+            pocketQueryMessages.add(new Email(StringUtils.join(message.getFrom(), ", "), message.getSubject(), (String) message.getContent(), message.getSentDate()));
         }
     }
 

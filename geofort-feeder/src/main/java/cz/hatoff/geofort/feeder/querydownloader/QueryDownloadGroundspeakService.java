@@ -1,10 +1,8 @@
 package cz.hatoff.geofort.feeder.querydownloader;
 
-import com.sun.org.apache.xml.internal.security.utils.Base64;
 import cz.hatoff.geofort.feeder.querychecker.CheckedPocketQuery;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -18,16 +16,16 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Queue;
 
 
 @Component
 public class QueryDownloadGroundspeakService implements QueryDownloadService {
+
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmssSS");
 
     private static final Logger logger = Logger.getLogger(QueryDownloadGroundspeakService.class);
 
@@ -70,6 +68,22 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
 
         @Override
         public void run() {
+            File pocketQueryFile = resolvePocketQueryFileName();
+            if (!pocketQueryFile.exists()) {
+                logger.info(String.format("Going to download pocket query archive '%s' into file '%s'", checkedPocketQuery, pocketQueryFile.getAbsolutePath()));
+                downloadPocketQueryArchive(pocketQueryFile);
+            } else {
+                logger.warn(String.format("Cannot download pocket query archive '%s' because file already exists '%s'", checkedPocketQuery, pocketQueryFile.getAbsolutePath()));
+            }
+
+        }
+
+        private File resolvePocketQueryFileName() {
+            String fileName = String.format("%s-%s.zip", dateFormat.format(checkedPocketQuery.getUpdateDate()), checkedPocketQuery.getQueryName());
+            return new File(environment.getProperty("application.directory.pq"), fileName);
+        }
+
+        private void downloadPocketQueryArchive(File pocketQueryFile) {
             CloseableHttpClient httpClient = null;
             try {
                 CookieStore cookieStore = groundspeakLogin.login();
@@ -82,7 +96,6 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
                 CloseableHttpResponse downloadResponse = httpClient.execute(downloadRequest);
                 InputStream pocketQueryStream = downloadResponse.getEntity().getContent();
 
-                File pocketQueryFile = new File(environment.getProperty("application.directory.pq"), checkedPocketQuery.getQueryName());
                 FileUtils.copyInputStreamToFile(pocketQueryStream, pocketQueryFile);
 
             } catch (Exception e) {
@@ -90,7 +103,6 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
             } finally {
                 IOUtils.closeQuietly(httpClient);
             }
-
         }
     }
 }
