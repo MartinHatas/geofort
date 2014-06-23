@@ -2,15 +2,25 @@ package cz.hatoff.geofort.feeder.querydownloader;
 
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 import cz.hatoff.geofort.feeder.querychecker.CheckedPocketQuery;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.Queue;
@@ -26,6 +36,9 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
 
     @Resource(name = "downloadedQueryQueue")
     private Queue<DownloadedPocketQuery> downloadedPocketQueryQueue;
+
+    @Autowired
+    private GroundspeakLogin groundspeakLogin;
 
     @Autowired
     private Environment environment;
@@ -57,27 +70,26 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
 
         @Override
         public void run() {
-            InputStream inputStream = null;
+            CloseableHttpClient httpClient = null;
             try {
+                CookieStore cookieStore = groundspeakLogin.login();
+                httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
 
+                HttpUriRequest downloadRequest = RequestBuilder.get()
+                        .setUri(checkedPocketQuery.getDownloadUrl().toURI())
+                        .build();
 
-                String authString = "my.nejsme.opice:slackLine87";
-                System.out.println("auth string: " + authString);
-                String authStringEnc = Base64.encode(authString.getBytes());
+                CloseableHttpResponse downloadResponse = httpClient.execute(downloadRequest);
+                InputStream pocketQueryStream = downloadResponse.getEntity().getContent();
 
-                URLConnection urlConnection = checkedPocketQuery.getDownloadUrl().openConnection();
-                urlConnection.setRequestProperty("Authorization", "Basic " + authStringEnc);
-                InputStream is = urlConnection.getInputStream();
-                byte[] bytes = IOUtils.toByteArray(is);
+                File pocketQueryFile = new File(environment.getProperty("application.directory.pq"), checkedPocketQuery.getQueryName());
+                FileUtils.copyInputStreamToFile(pocketQueryStream, pocketQueryFile);
 
-                int i = 0;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logger.error(e);
-
             } finally {
-                IOUtils.closeQuietly(inputStream);
+                IOUtils.closeQuietly(httpClient);
             }
-
 
         }
     }

@@ -1,23 +1,28 @@
 package cz.hatoff.geofort.feeder.querydownloader;
 
-import org.apache.http.NameValuePair;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
 @Component
 public class GroundspeakLogin {
+
+    private static final Logger logger = Logger.getLogger(GroundspeakLogin.class);
 
     private static final String LOGIN_URI = "https://www.geocaching.com/login/default.aspx";
 
@@ -31,31 +36,45 @@ public class GroundspeakLogin {
     @Autowired
     private Environment environment;
 
-    private CloseableHttpClient httpClient = HttpClients.createDefault();
-    private CookieStore cookieStore = new BasicCookieStore();
+    private static final CookieStore cookieStore = new BasicCookieStore();
 
-    public void login() {
-
-        HttpPost httpPost = new HttpPost(LOGIN_URI);
-        List<NameValuePair> parameters = new ArrayList<NameValuePair>();
-        parameters.add(new BasicNameValuePair(EVENT_TARGET_KEY, ""));
-        parameters.add(new BasicNameValuePair(EVENT_ARGUMENT_KEY, ""));
-        parameters.add(new BasicNameValuePair(USERNAME_KEY, "my.nejsme.opice"));
-        parameters.add(new BasicNameValuePair(PASSWORD_KEY, "slackLine87"));
-        parameters.add(new BasicNameValuePair(REMEMBER_ME_KEY, "on"));
-        parameters.add(new BasicNameValuePair(SIGN_IN_KEY, "Login"));
-
+    public CookieStore login() {
+        logger.info(String.format("Logging to geocatching.com as user '%s'.", environment.getProperty("downloader.groundspeak.login")));
+        CloseableHttpClient httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
+        HttpUriRequest loginRequest = buildLoginRequest();
         CloseableHttpResponse loginResponse = null;
-
         try {
-            httpPost.setEntity(new UrlEncodedFormEntity(parameters));
-            loginResponse = httpClient.execute(httpPost);
-        } catch (Exception e) {
-            if (loginResponse != null) {
-                loginResponse.close();
+            loginResponse = login(httpClient, loginRequest);
+            if (!(loginResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK ^ loginResponse.getStatusLine().getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)) {
+                String message = String.format("Cannot login into geocatching.com account with given credentials. Response HTTP code is '%d'", loginResponse.getStatusLine().getStatusCode());
+                logger.error(message);
+                throw new Exception(message);
             }
+        } catch (Exception e) {
+            logger.error(e);
+        } finally {
+            IOUtils.closeQuietly(loginResponse);
+            IOUtils.closeQuietly(httpClient);
         }
-        int i = 0;
+        return cookieStore;
+    }
 
+    private CloseableHttpResponse login(CloseableHttpClient httpClient, HttpUriRequest loginRequest) throws IOException {
+        CloseableHttpResponse loginResponse = httpClient.execute(loginRequest);
+        HttpEntity loginEntity = loginResponse.getEntity();
+        EntityUtils.consume(loginEntity);
+        return loginResponse;
+    }
+
+    private HttpUriRequest buildLoginRequest() {
+        return RequestBuilder.post()
+                    .setUri(LOGIN_URI)
+                    .addParameter(new BasicNameValuePair(EVENT_TARGET_KEY, ""))
+                    .addParameter(new BasicNameValuePair(EVENT_ARGUMENT_KEY, ""))
+                    .addParameter(new BasicNameValuePair(USERNAME_KEY, environment.getProperty("downloader.groundspeak.login")))
+                    .addParameter(new BasicNameValuePair(PASSWORD_KEY, environment.getProperty("downloader.groundspeak.password")))
+                    .addParameter(new BasicNameValuePair(REMEMBER_ME_KEY, "on"))
+                    .addParameter(new BasicNameValuePair(SIGN_IN_KEY, "Login"))
+                    .build();
     }
 }
