@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -37,10 +38,10 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
     private ExecutorService threadPool;
 
     @Resource(name = "checkedQueryQueue")
-    private Queue<CheckedPocketQuery> checkedPocketQueryQueue;
+    private BlockingQueue<CheckedPocketQuery> checkedPocketQueryQueue;
 
     @Resource(name = "downloadedQueryQueue")
-    private Queue<DownloadedPocketQuery> downloadedPocketQueryQueue;
+    private BlockingQueue<DownloadedPocketQuery> downloadedPocketQueryQueue;
 
     @Autowired
     private GroundspeakLogin groundspeakLogin;
@@ -51,6 +52,26 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
     @PostConstruct
     private void initDownloader() {
         initThreadPool();
+        initProcessThread();
+    }
+
+    private void initProcessThread() {
+        Runnable threadProcessor = new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        CheckedPocketQuery checkedPocketQuery = checkedPocketQueryQueue.take();
+                        logger.info(String.format("Taking checked pocket query from queue '%s'. Creating new download task.", checkedPocketQuery.getQueryName()));
+                        DownloadPocketQueryTask downloadPocketQueryTask = new DownloadPocketQueryTask(checkedPocketQuery);
+                        threadPool.submit(downloadPocketQueryTask);
+                    } catch (InterruptedException e) {
+                        logger.error(e);
+                    }
+                }
+            }
+        };
+        new Thread(threadProcessor).start();
     }
 
     private void initThreadPool() {
@@ -59,22 +80,6 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
         threadPool = Executors.newFixedThreadPool(Integer.valueOf(threadCountString));
     }
 
-    public synchronized void checkForIncomingQueries() {
-        if (!checkedPocketQueryQueue.isEmpty()) {
-            downloadIncomingPocketQueries();
-        }
-    }
-
-    private void downloadIncomingPocketQueries() {
-        logger.info(String.format("Found '%d' incoming pocket queries. Going to start downloading.", checkedPocketQueryQueue.size()));
-        Iterator<CheckedPocketQuery> pocketQueryIterator = checkedPocketQueryQueue.iterator();
-        while (pocketQueryIterator.hasNext()) {
-            CheckedPocketQuery checkedPocketQuery = pocketQueryIterator.next();
-            Thread downloadThread = new Thread(new DownloadPocketQueryTask(checkedPocketQuery));
-            downloadThread.start();
-            pocketQueryIterator.remove();
-        }
-    }
 
     @PreDestroy
     private void closeDownloader() throws InterruptedException {

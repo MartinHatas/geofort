@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Pattern;
 
 
@@ -27,14 +26,16 @@ public class QueryCheckingGmailService implements QueryCheckingService {
     private PocketQueryEmailParser pocketQueryEmailParser;
 
     @Resource(name = "checkedQueryQueue")
-    private Queue<CheckedPocketQuery> checkedPocketQueryQueue;
+    private BlockingQueue<CheckedPocketQuery> checkedPocketQueryQueue;
 
     @Override
-    public void checkForNewLinks() {
+    public void checkForNewLinks() throws InterruptedException {
         logger.info("Checking for new links.");
         Set<Email> emails = pocketQueryEmailDownloader.downloadPocketQueryEmails();
         Set<CheckedPocketQuery> pocketQueries = pocketQueryEmailParser.parseMessagesToPocketQueries(emails);
-        checkedPocketQueryQueue.addAll(pocketQueries);
+        for (CheckedPocketQuery pocketQuery : pocketQueries) {
+            checkedPocketQueryQueue.put(pocketQuery);
+        }
     }
 
 }

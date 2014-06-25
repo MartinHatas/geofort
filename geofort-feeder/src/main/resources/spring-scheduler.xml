@@ -6,7 +6,6 @@
 
     <task:scheduled-tasks >
         <task:scheduled ref="queryCheckingGmailService" method="checkForNewLinks" cron="*/20 * * * * *" />
-        <task:scheduled ref="queryDownloadGroundspeakService" method="checkForIncomingQueries" cron="*/10 * * * * *" />
     </task:scheduled-tasks>
 
 </beans>

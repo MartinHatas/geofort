@@ -1,5 +1,6 @@
 package cz.hatoff.geofort.feeder.configuration;
 
+import cz.hatoff.geofort.feeder.parser.ParsedPocketQuery;
 import cz.hatoff.geofort.feeder.querychecker.CheckedPocketQuery;
 import cz.hatoff.geofort.feeder.querydownloader.DownloadedPocketQuery;
 import org.springframework.context.annotation.Bean;
@@ -16,12 +17,17 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class QueueConfiguration {
 
     @Bean(name = "checkedQueryQueue")
-    public Queue<CheckedPocketQuery> createCheckedPocketQueryQueue() {
-        return new ConcurrentLinkedQueue<CheckedPocketQuery>();
+    public BlockingQueue<CheckedPocketQuery> createCheckedPocketQueryQueue() {
+        return new LinkedBlockingQueue<CheckedPocketQuery>();
     }
 
     @Bean(name = "downloadedQueryQueue")
-    public Queue<DownloadedPocketQuery> createDownloadedPocketQueryQueue() {
-        return new ConcurrentLinkedQueue<DownloadedPocketQuery>();
+    public BlockingQueue<DownloadedPocketQuery> createDownloadedPocketQueryQueue() {
+        return new LinkedBlockingQueue<DownloadedPocketQuery>();
+    }
+
+    @Bean(name = "parsedQueryQueue")
+    public BlockingQueue<ParsedPocketQuery> createParsedPocketQueryQueue() {
+        return new LinkedBlockingQueue<ParsedPocketQuery>();
     }
 }
