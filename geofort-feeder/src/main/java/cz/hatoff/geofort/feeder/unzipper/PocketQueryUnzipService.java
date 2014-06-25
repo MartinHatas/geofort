@@ -1,6 +1,6 @@
-package cz.hatoff.geofort.feeder.parser;
+package cz.hatoff.geofort.feeder.unzipper;
 
-import cz.hatoff.geofort.feeder.unzipper.UnzippedPocketQuery;
+import cz.hatoff.geofort.feeder.querydownloader.DownloadedPocketQuery;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -15,17 +15,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class ParserServiceImpl implements ParserService {
+public class PocketQueryUnzipService {
 
-    private static final Logger logger = Logger.getLogger(ParserServiceImpl.class);
+    private static final Logger logger = Logger.getLogger(PocketQueryUnzipService.class);
 
     private ExecutorService threadPool;
 
+    @Resource(name = "downloadedQueryQueue")
+    private BlockingQueue<DownloadedPocketQuery> downloadedPocketQueryQueue;
+
     @Resource(name = "unzippedQueryQueue")
     private BlockingQueue<UnzippedPocketQuery> unzippedPocketQueryQueue;
-
-    @Resource(name = "parsedQueryQueue")
-    private BlockingQueue<ParsedPocketQuery> parsedPocketQueryQueue;
 
     @Autowired
     private Environment environment;
@@ -37,8 +37,8 @@ public class ParserServiceImpl implements ParserService {
     }
 
     private void initThreadPool() {
-        String threadCountString = environment.getProperty("parser.thread.pool.size");
-        logger.info(String.format("Initializing parser tread pool with '%s' threads.", threadCountString));
+        String threadCountString = environment.getProperty("unzipper.thread.pool.size");
+        logger.info(String.format("Initializing unzipper tread pool with '%s' threads.", threadCountString));
         threadPool = Executors.newFixedThreadPool(Integer.valueOf(threadCountString));
     }
 
@@ -48,8 +48,8 @@ public class ParserServiceImpl implements ParserService {
             public void run() {
                 while (true) {
                     try {
-                        UnzippedPocketQuery unzippedPocketQuery = unzippedPocketQueryQueue.take();
-                        logger.info(String.format("Taking downloaded pocket query from queue '%s'. Creating new parse task.", unzippedPocketQuery.getQueryName()));
+                        DownloadedPocketQuery downloadedPocketQuery = downloadedPocketQueryQueue.take();
+                        logger.info(String.format("Taking downloaded pocket query from queue '%s'. Creating new unzip task.", downloadedPocketQuery.getQueryName()));
                     } catch (InterruptedException e) {
                         logger.error(e);
                     }
@@ -60,11 +60,10 @@ public class ParserServiceImpl implements ParserService {
     }
 
     @PreDestroy
-    private void closeParser() throws InterruptedException {
-        logger.info("Shutting down pocket query parsing service. Waiting for running downloads with 30 second timeout.");
+    private void closeUnzipper() throws InterruptedException {
+        logger.info("Shutting down pocket query unzip service. Waiting for running downloads with 30 second timeout.");
         threadPool.shutdown();
         threadPool.awaitTermination(30, TimeUnit.SECONDS);
     }
-
 
 }

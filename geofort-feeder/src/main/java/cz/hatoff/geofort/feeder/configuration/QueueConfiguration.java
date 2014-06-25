@@ -3,6 +3,7 @@ package cz.hatoff.geofort.feeder.configuration;
 import cz.hatoff.geofort.feeder.parser.ParsedPocketQuery;
 import cz.hatoff.geofort.feeder.querychecker.CheckedPocketQuery;
 import cz.hatoff.geofort.feeder.querydownloader.DownloadedPocketQuery;
+import cz.hatoff.geofort.feeder.unzipper.UnzippedPocketQuery;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -24,6 +25,11 @@ public class QueueConfiguration {
     @Bean(name = "downloadedQueryQueue")
     public BlockingQueue<DownloadedPocketQuery> createDownloadedPocketQueryQueue() {
         return new LinkedBlockingQueue<DownloadedPocketQuery>();
+    }
+
+    @Bean(name = "unzippedQueryQueue")
+    public BlockingQueue<UnzippedPocketQuery> createUnzippedPocketQueryQueue() {
+        return new LinkedBlockingQueue<UnzippedPocketQuery>();
     }
 
     @Bean(name = "parsedQueryQueue")

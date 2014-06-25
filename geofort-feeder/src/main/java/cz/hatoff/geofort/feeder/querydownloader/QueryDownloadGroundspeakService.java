@@ -109,8 +109,9 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
         }
 
         private File resolvePocketQueryFileName() {
-            String fileName = String.format("%s-%s.zip", dateFormat.format(checkedPocketQuery.getUpdateDate()), checkedPocketQuery.getQueryName());
-            return new File(environment.getProperty("application.directory.pq"), fileName);
+            String pqDirectory = String.format("%s-%s", dateFormat.format(checkedPocketQuery.getUpdateDate()), checkedPocketQuery.getQueryName());
+            String fileName = String.format("%s.zip", pqDirectory);
+            return new File(new File(environment.getProperty("application.directory.pq"), pqDirectory), fileName);
         }
 
         private DownloadedPocketQuery downloadPocketQueryArchive(File pocketQueryFile) {

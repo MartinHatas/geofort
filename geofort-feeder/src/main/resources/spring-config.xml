@@ -11,6 +11,7 @@
     <context:annotation-config />
     <context:component-scan base-package="cz.hatoff.geofort.feeder.querychecker"/>
     <context:component-scan base-package="cz.hatoff.geofort.feeder.querydownloader"/>
+    <context:component-scan base-package="cz.hatoff.geofort.feeder.unzipper"/>
     <context:component-scan base-package="cz.hatoff.geofort.feeder.parser"/>
     <context:property-placeholder location="classpath:datasource.properties"/>
 
