@@ -14,12 +14,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 @Component
@@ -28,6 +33,8 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmssSS");
 
     private static final Logger logger = Logger.getLogger(QueryDownloadGroundspeakService.class);
+
+    private ExecutorService threadPool;
 
     @Resource(name = "checkedQueryQueue")
     private Queue<CheckedPocketQuery> checkedPocketQueryQueue;
@@ -40,6 +47,17 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
 
     @Autowired
     private Environment environment;
+
+    @PostConstruct
+    private void initDownloader() {
+        initThreadPool();
+    }
+
+    private void initThreadPool() {
+        String threadCountString = environment.getProperty("downloader.thread.pool.size");
+        logger.info(String.format("Initializing downloader tread pool with '%s' threads.", threadCountString));
+        threadPool = Executors.newFixedThreadPool(Integer.valueOf(threadCountString));
+    }
 
     public synchronized void checkForIncomingQueries() {
         if (!checkedPocketQueryQueue.isEmpty()) {
@@ -58,6 +76,13 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
         }
     }
 
+    @PreDestroy
+    private void closeDownloader() throws InterruptedException {
+        logger.info("Shutting down pocket query download service. Waiting for running downloads with 30 second timeout.");
+        threadPool.shutdown();
+        threadPool.awaitTermination(30, TimeUnit.SECONDS);
+    }
+
     class DownloadPocketQueryTask implements Runnable {
 
         private CheckedPocketQuery checkedPocketQuery;
@@ -71,11 +96,11 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
             File pocketQueryFile = resolvePocketQueryFileName();
             if (!pocketQueryFile.exists()) {
                 logger.info(String.format("Going to download pocket query archive '%s' into file '%s'", checkedPocketQuery, pocketQueryFile.getAbsolutePath()));
-                downloadPocketQueryArchive(pocketQueryFile);
+                DownloadedPocketQuery downloadedPocketQuery = downloadPocketQueryArchive(pocketQueryFile);
+                downloadedPocketQueryQueue.add(downloadedPocketQuery);
             } else {
                 logger.warn(String.format("Cannot download pocket query archive '%s' because file already exists '%s'", checkedPocketQuery, pocketQueryFile.getAbsolutePath()));
             }
-
         }
 
         private File resolvePocketQueryFileName() {
@@ -83,7 +108,7 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
             return new File(environment.getProperty("application.directory.pq"), fileName);
         }
 
-        private void downloadPocketQueryArchive(File pocketQueryFile) {
+        private DownloadedPocketQuery downloadPocketQueryArchive(File pocketQueryFile) {
             CloseableHttpClient httpClient = null;
             try {
                 CookieStore cookieStore = groundspeakLogin.login();
@@ -103,6 +128,8 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
             } finally {
                 IOUtils.closeQuietly(httpClient);
             }
+            logger.info(String.format("Download of file '%s' completed OK!", pocketQueryFile.getAbsolutePath()));
+            return new DownloadedPocketQuery(checkedPocketQuery, pocketQueryFile);
         }
     }
 }

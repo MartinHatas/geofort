@@ -6,9 +6,9 @@ import java.util.Date;
 
 public class CheckedPocketQuery {
 
-    private String queryName;
-    private URL downloadUrl;
-    private Date updateDate;
+    protected String queryName;
+    protected URL downloadUrl;
+    protected Date updateDate;
 
     public CheckedPocketQuery(String queryName, URL downloadUrl, Date updateDate) {
         this.queryName = queryName;
