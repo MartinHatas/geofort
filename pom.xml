@@ -10,9 +10,15 @@
 
     <packaging>pom</packaging>
 
+    <properties>
+        <spring.version>4.0.5.RELEASE</spring.version>
+        <hibernate.version>4.3.5.Final</hibernate.version>
+    </properties>
+
     <modules>
         <module>geofort-feeder</module>
         <module>geofort-entity</module>
+        <module>geofort-store</module>
     </modules>
 
 

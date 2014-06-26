@@ -1,6 +1,6 @@
-package cz.hatoff.geofort.feeder.parser;
+package cz.hatoff.geofort.store.parser;
 
-import cz.hatoff.geofort.feeder.unzipper.UnzippedPocketQuery;
+import cz.hatoff.geofort.store.unzipper.UnzippedPocketQuery;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -49,7 +49,7 @@ public class ParserServiceImpl implements ParserService {
                 while (true) {
                     try {
                         UnzippedPocketQuery unzippedPocketQuery = unzippedPocketQueryQueue.take();
-                        logger.info(String.format("Taking downloaded pocket query from queue '%s'. Creating new parse task.", unzippedPocketQuery.getQueryName()));
+                        logger.info(String.format("Taking downloaded pocket query from queue '%s'. Creating new parse task.", unzippedPocketQuery));
                     } catch (InterruptedException e) {
                         logger.error(e);
                     }

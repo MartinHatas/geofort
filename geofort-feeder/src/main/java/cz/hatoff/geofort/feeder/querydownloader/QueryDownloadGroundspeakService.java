@@ -1,7 +1,6 @@
 package cz.hatoff.geofort.feeder.querydownloader;
 
 import cz.hatoff.geofort.feeder.querychecker.CheckedPocketQuery;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -20,8 +19,6 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.Iterator;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 
 @Component
-public class QueryDownloadGroundspeakService implements QueryDownloadService {
+public class QueryDownloadGroundspeakService {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmssSS");
 
@@ -98,24 +95,14 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
 
         @Override
         public void run() {
-            File pocketQueryFile = resolvePocketQueryFileName();
-            if (!pocketQueryFile.exists()) {
-                logger.info(String.format("Going to download pocket query archive '%s' into file '%s'", checkedPocketQuery, pocketQueryFile.getAbsolutePath()));
-                DownloadedPocketQuery downloadedPocketQuery = downloadPocketQueryArchive(pocketQueryFile);
-                downloadedPocketQueryQueue.add(downloadedPocketQuery);
-            } else {
-                logger.warn(String.format("Cannot download pocket query archive '%s' because file already exists '%s'", checkedPocketQuery, pocketQueryFile.getAbsolutePath()));
-            }
+            logger.info(String.format("Going to download pocket query archive '%s'.", checkedPocketQuery));
+            DownloadedPocketQuery downloadedPocketQuery = downloadPocketQueryArchive();
+            downloadedPocketQueryQueue.add(downloadedPocketQuery);
         }
 
-        private File resolvePocketQueryFileName() {
-            String pqDirectory = String.format("%s-%s", dateFormat.format(checkedPocketQuery.getUpdateDate()), checkedPocketQuery.getQueryName());
-            String fileName = String.format("%s.zip", pqDirectory);
-            return new File(new File(environment.getProperty("application.directory.pq"), pqDirectory), fileName);
-        }
-
-        private DownloadedPocketQuery downloadPocketQueryArchive(File pocketQueryFile) {
+        private DownloadedPocketQuery downloadPocketQueryArchive() {
             CloseableHttpClient httpClient = null;
+            byte[] pocketQueryBytes = new byte[0];
             try {
                 CookieStore cookieStore = groundspeakLogin.login();
                 httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
@@ -127,15 +114,15 @@ public class QueryDownloadGroundspeakService implements QueryDownloadService {
                 CloseableHttpResponse downloadResponse = httpClient.execute(downloadRequest);
                 InputStream pocketQueryStream = downloadResponse.getEntity().getContent();
 
-                FileUtils.copyInputStreamToFile(pocketQueryStream, pocketQueryFile);
+                pocketQueryBytes = IOUtils.toByteArray(pocketQueryStream);
 
             } catch (Exception e) {
                 logger.error(e);
             } finally {
                 IOUtils.closeQuietly(httpClient);
             }
-            logger.info(String.format("Download of file '%s' completed OK!", pocketQueryFile.getAbsolutePath()));
-            return new DownloadedPocketQuery(checkedPocketQuery, pocketQueryFile);
+            logger.info(String.format("Download of pocket query '%s' completed OK!", checkedPocketQuery.getQueryName()));
+            return new DownloadedPocketQuery(checkedPocketQuery, pocketQueryBytes);
         }
     }
 }

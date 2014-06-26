@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PreDestroy;
 import javax.mail.*;
 import java.util.HashSet;
 import java.util.Properties;

@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 
 @Component
-public class QueryCheckingGmailService implements QueryCheckingService {
+public class QueryCheckingGmailService {
 
     private static final Logger logger = Logger.getLogger(QueryCheckingGmailService.class);
 
@@ -28,7 +28,6 @@ public class QueryCheckingGmailService implements QueryCheckingService {
     @Resource(name = "checkedQueryQueue")
     private BlockingQueue<CheckedPocketQuery> checkedPocketQueryQueue;
 
-    @Override
     public void checkForNewLinks() throws InterruptedException {
         logger.info("Checking for new links.");
         Set<Email> emails = pocketQueryEmailDownloader.downloadPocketQueryEmails();

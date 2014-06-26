@@ -1,6 +1,5 @@
-package cz.hatoff.geofort.feeder.unzipper;
+package cz.hatoff.geofort.store.unzipper;
 
-import cz.hatoff.geofort.feeder.querydownloader.DownloadedPocketQuery;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -20,9 +19,6 @@ public class PocketQueryUnzipService {
     private static final Logger logger = Logger.getLogger(PocketQueryUnzipService.class);
 
     private ExecutorService threadPool;
-
-    @Resource(name = "downloadedQueryQueue")
-    private BlockingQueue<DownloadedPocketQuery> downloadedPocketQueryQueue;
 
     @Resource(name = "unzippedQueryQueue")
     private BlockingQueue<UnzippedPocketQuery> unzippedPocketQueryQueue;
@@ -46,14 +42,14 @@ public class PocketQueryUnzipService {
         Runnable threadProcessor = new Runnable() {
             @Override
             public void run() {
-                while (true) {
-                    try {
-                        DownloadedPocketQuery downloadedPocketQuery = downloadedPocketQueryQueue.take();
-                        logger.info(String.format("Taking downloaded pocket query from queue '%s'. Creating new unzip task.", downloadedPocketQuery.getQueryName()));
-                    } catch (InterruptedException e) {
-                        logger.error(e);
-                    }
-                }
+//                while (true) {
+//                    try {
+//                        DownloadedPocketQuery downloadedPocketQuery = downloadedPocketQueryQueue.take();
+//                        logger.info(String.format("Taking downloaded pocket query from queue '%s'. Creating new unzip task.", downloadedPocketQuery.getQueryName()));
+//                    } catch (InterruptedException e) {
+//                        logger.error(e);
+//                    }
+//                }
             }
         };
         new Thread(threadProcessor).start();
