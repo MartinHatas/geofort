@@ -79,8 +79,7 @@ public class QueryGoogleDriveUploadService {
             Properties props = new Properties();
             props.put("mail.smtp.host", "smtp.gmail.com");
             props.put("mail.smtp.socketFactory.port", "465");
-            props.put("mail.smtp.socketFactory.class",
-                    "javax.net.ssl.SSLSocketFactory");
+            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
             props.put("mail.smtp.auth", "true");
             props.put("mail.smtp.port", "465");
 
@@ -110,7 +109,7 @@ public class QueryGoogleDriveUploadService {
 
                 // Part two is attachment
                 messageBodyPart = new MimeBodyPart();
-                DataSource source =  new ByteArrayDataSource(downloadedPocketQuery.getDownloadedQuery(), "application/zip");
+                DataSource source = new ByteArrayDataSource(downloadedPocketQuery.getDownloadedQuery(), "application/zip");
                 messageBodyPart.setDataHandler(new DataHandler(source));
                 messageBodyPart.setFileName(downloadedPocketQuery.getQueryName() + ".zip");
                 multipart.addBodyPart(messageBodyPart);
