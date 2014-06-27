@@ -9,11 +9,13 @@ public class CheckedPocketQuery {
     protected String queryName;
     protected URL downloadUrl;
     protected Date updateDate;
+    protected String emailSubject;
 
-    public CheckedPocketQuery(String queryName, URL downloadUrl, Date updateDate) {
+    public CheckedPocketQuery(String queryName, URL downloadUrl, Date updateDate, String emailSubject) {
         this.queryName = queryName;
         this.downloadUrl = downloadUrl;
         this.updateDate = updateDate;
+        this.emailSubject = emailSubject;
     }
 
     public String getQueryName() {
@@ -40,12 +42,21 @@ public class CheckedPocketQuery {
         this.updateDate = updateDate;
     }
 
+    public String getEmailSubject() {
+        return emailSubject;
+    }
+
+    public void setEmailSubject(String emailSubject) {
+        this.emailSubject = emailSubject;
+    }
+
     @Override
     public String toString() {
-        return "CheckedPocketQuery{" +
+        return "PocketQuery{" +
                 "queryName='" + queryName + '\'' +
                 ", downloadUrl=" + downloadUrl +
                 ", updateDate=" + updateDate +
+                ", emailSubject='" + emailSubject + '\'' +
                 '}';
     }
 }

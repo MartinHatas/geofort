@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import javax.mail.MessagingException;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -30,8 +29,7 @@ public class PocketQueryEmailParser {
                 String queryName = parseQueryName(email);
                 URL downloadUrl = parseQueryDownloadUrl(email);
                 if (downloadUrl == null) continue;
-                Date updateDate = parseUpdateDate(email);
-                createPocketQuery(queryName, downloadUrl, updateDate);
+                createPocketQuery(queryName, downloadUrl, email);
             } catch (Exception e) {
                 logger.error(e);
             }
@@ -39,18 +37,15 @@ public class PocketQueryEmailParser {
         return pocketQueries;
     }
 
-    private Date parseUpdateDate(Email email) {
-        return email.getUpdateDate();
-    }
 
-    private void createPocketQuery(String queryName, URL downloadUrl, Date updateDate) {
-        CheckedPocketQuery checkedPocketQuery = new CheckedPocketQuery(queryName, downloadUrl, updateDate);
+    private void createPocketQuery(String queryName, URL downloadUrl, Email email) {
+        CheckedPocketQuery checkedPocketQuery = new CheckedPocketQuery(queryName, downloadUrl, email.getUpdateDate(), email.getSubject());
         pocketQueries.add(checkedPocketQuery);
     }
 
     private URL parseQueryDownloadUrl(Email email) throws IOException, MessagingException {
         String messageContent = email.getContent();
-        Matcher downloadLinkMatcher = QueryCheckingGmailService.DOWNLOAD_LINK_PATTERN.matcher(messageContent);
+        Matcher downloadLinkMatcher = QueryCheckingMailService.DOWNLOAD_LINK_PATTERN.matcher(messageContent);
         if (!downloadLinkMatcher.find()) {
             logger.warn(String.format("Pocket query download link was not found in email from '%s' with subject '%s'. This email will be skipped.", email.getFrom(), email.getSubject()));
             return null;
@@ -62,7 +57,7 @@ public class PocketQueryEmailParser {
 
     private String parseQueryName(Email email) throws MessagingException {
         String subject = email.getSubject();
-        Matcher queryNameMatcher = QueryCheckingGmailService.SUBJECT_PATTERN.matcher(subject);
+        Matcher queryNameMatcher = QueryCheckingMailService.SUBJECT_PATTERN.matcher(subject);
         queryNameMatcher.find();
         return queryNameMatcher.group(1);
     }

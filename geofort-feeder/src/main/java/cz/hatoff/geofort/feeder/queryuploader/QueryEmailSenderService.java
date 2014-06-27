@@ -16,15 +16,18 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
+import java.text.SimpleDateFormat;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Component
-public class QueryGoogleDriveUploadService {
+public class QueryEmailSenderService {
 
-    private static final Logger logger = Logger.getLogger(QueryGoogleDriveUploadService.class);
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmssSS");
+
+    private static final Logger logger = Logger.getLogger(QueryEmailSenderService.class);
 
     private ExecutorService threadPool;
 
@@ -77,32 +80,31 @@ public class QueryGoogleDriveUploadService {
         public void run() {
 
             Properties props = new Properties();
-            props.put("mail.smtp.host", "smtp.gmail.com");
-            props.put("mail.smtp.socketFactory.port", "465");
+            props.put("mail.smtp.host", environment.getProperty("uploader.email.server"));
+            props.put("mail.smtp.socketFactory.port", environment.getProperty("uploader.email.port"));
             props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
             props.put("mail.smtp.auth", "true");
-            props.put("mail.smtp.port", "465");
+            props.put("mail.smtp.port", environment.getProperty("uploader.email.port"));
 
             Session session = Session.getDefaultInstance(props,
                     new javax.mail.Authenticator() {
                         protected PasswordAuthentication getPasswordAuthentication() {
-                            return new PasswordAuthentication("martin.hatas","slackLine87");
+                            return new PasswordAuthentication(environment.getProperty("uploader.email.login"),environment.getProperty("uploader.email.password"));
                         }
                     });
 
             try {
                 logger.info("Going to send pocket query into store.");
                 Message message = new MimeMessage(session);
-                message.setFrom(new InternetAddress("martin.hatas@gmail.com"));
-                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse("ja.nejsem.opice@gmail.com"));
-                message.setSubject("PocketQuery");
-                message.setText("Hello, this is new PQ mail :]");
+                message.setFrom(new InternetAddress(environment.getProperty("uploader.email.login")));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse("browsil.pillow@gmail.com"));
+                message.setSubject(downloadedPocketQuery.getEmailSubject());
 
                 // create the message part
                 MimeBodyPart messageBodyPart = new MimeBodyPart();
 
                 //fill message
-                messageBodyPart.setText("Hi");
+                messageBodyPart.setText(downloadedPocketQuery.toString());
 
                 Multipart multipart = new MimeMultipart();
                 multipart.addBodyPart(messageBodyPart);
@@ -111,6 +113,8 @@ public class QueryGoogleDriveUploadService {
                 messageBodyPart = new MimeBodyPart();
                 DataSource source = new ByteArrayDataSource(downloadedPocketQuery.getDownloadedQuery(), "application/zip");
                 messageBodyPart.setDataHandler(new DataHandler(source));
+
+                String fileName = String.format("%s-%s.zip", "PQ", dateFormat.format(downloadedPocketQuery.getUpdateDate()));
                 messageBodyPart.setFileName(downloadedPocketQuery.getQueryName() + ".zip");
                 multipart.addBodyPart(messageBodyPart);
 

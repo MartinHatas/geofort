@@ -69,7 +69,7 @@ public class PocketQueryEmailDownloader {
 
     private void resolveIfPocketQuery(Message message) throws Exception {
         logger.info(String.format("Going to check message from '%s' with subject '%s'.", StringUtils.join(message.getFrom(), ", "), message.getSubject()));
-        Matcher matcher = QueryCheckingGmailService.SUBJECT_PATTERN.matcher(message.getSubject());
+        Matcher matcher = QueryCheckingMailService.SUBJECT_PATTERN.matcher(message.getSubject());
         if (matcher.find()){
             logger.info(String.format("Email from '%s' with subject '%s' is OK!", StringUtils.join(message.getFrom(), ", "), message.getSubject()));
             pocketQueryMessages.add(new Email(StringUtils.join(message.getFrom(), ", "), message.getSubject(), (String) message.getContent(), message.getSentDate()));

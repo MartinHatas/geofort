@@ -28,8 +28,6 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class QueryDownloadGroundspeakService {
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmssSS");
-
     private static final Logger logger = Logger.getLogger(QueryDownloadGroundspeakService.class);
 
     private ExecutorService threadPool;

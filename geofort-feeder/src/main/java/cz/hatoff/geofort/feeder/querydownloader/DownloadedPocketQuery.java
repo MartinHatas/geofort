@@ -8,7 +8,7 @@ public class DownloadedPocketQuery extends CheckedPocketQuery {
     private byte[] downloadedQuery;
 
     public DownloadedPocketQuery(CheckedPocketQuery checkedPocketQuery, byte[] downloadedQuery) {
-        super(checkedPocketQuery.getQueryName(), checkedPocketQuery.getDownloadUrl(), checkedPocketQuery.getUpdateDate());
+        super(checkedPocketQuery.getQueryName(), checkedPocketQuery.getDownloadUrl(), checkedPocketQuery.getUpdateDate(), checkedPocketQuery.getEmailSubject());
         this.downloadedQuery = downloadedQuery;
     }
 
@@ -22,8 +22,6 @@ public class DownloadedPocketQuery extends CheckedPocketQuery {
 
     @Override
     public String toString() {
-        return "DownloadedPocketQuery{" +
-                "downloadedQuery=" + getQueryName() +
-                '}';
+        return super.toString();
     }
 }

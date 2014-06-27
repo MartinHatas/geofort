@@ -11,8 +11,6 @@ public class FeederApplication {
 
     private ApplicationContext context;
 
-
-
     public static void main(String[] args) {
         new FeederApplication().start();
     }

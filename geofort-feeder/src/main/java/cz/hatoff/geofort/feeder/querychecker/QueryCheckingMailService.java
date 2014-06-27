@@ -2,6 +2,7 @@ package cz.hatoff.geofort.feeder.querychecker;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 
@@ -12,9 +13,9 @@ import java.util.regex.Pattern;
 
 
 @Component
-public class QueryCheckingGmailService {
+public class QueryCheckingMailService {
 
-    private static final Logger logger = Logger.getLogger(QueryCheckingGmailService.class);
+    private static final Logger logger = Logger.getLogger(QueryCheckingMailService.class);
 
     public static final Pattern SUBJECT_PATTERN = Pattern.compile("Geocaching: Your Pocket Query, (.*), is now available.");
     public static final Pattern DOWNLOAD_LINK_PATTERN = Pattern.compile("<a .*?href=['\"\"](.+?)['\"\"].*?>Download now</a>");
