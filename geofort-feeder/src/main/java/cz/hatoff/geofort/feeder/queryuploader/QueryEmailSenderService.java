@@ -115,7 +115,7 @@ public class QueryEmailSenderService {
                 messageBodyPart.setDataHandler(new DataHandler(source));
 
                 String fileName = String.format("%s-%s.zip", "PQ", dateFormat.format(downloadedPocketQuery.getUpdateDate()));
-                messageBodyPart.setFileName(downloadedPocketQuery.getQueryName() + ".zip");
+                messageBodyPart.setFileName(fileName);
                 multipart.addBodyPart(messageBodyPart);
 
                 // Put parts in message
