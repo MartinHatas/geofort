@@ -19,7 +19,12 @@ public class FeederApplication {
         logger.info("Starting geofort-feeder.");
         logger.info("Loading application context and initializing singletons.");
         context = new ClassPathXmlApplicationContext("spring-config.xml");
-        ((AbstractApplicationContext) context).registerShutdownHook();
+        Runtime.getRuntime().addShutdownHook(new Thread(){
+            public void run() {
+                logger.debug("Shutdown hook was invoked. Shutting down geofort-feeder.");
+                ((AbstractApplicationContext) context).close();
+            }
+        });
 
     }
 }

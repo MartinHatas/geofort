@@ -1,5 +1,6 @@
 package cz.hatoff.geofort.feeder.querydownloader;
 
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -14,7 +15,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -34,12 +34,12 @@ public class GroundspeakLogin {
     private static final String SIGN_IN_KEY = "ctl00$ContentBody$btnSignIn";
 
     @Autowired
-    private Environment environment;
+    private PropertiesConfiguration configuration;
 
     private static final CookieStore cookieStore = new BasicCookieStore();
 
     public CookieStore login() {
-        logger.info(String.format("Logging to geocatching.com as user '%s'.", environment.getProperty("downloader.groundspeak.login")));
+        logger.info(String.format("Logging to geocatching.com as user '%s'.", configuration.getString("downloader.groundspeak.login")));
         CloseableHttpClient httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
         HttpUriRequest loginRequest = buildLoginRequest();
         CloseableHttpResponse loginResponse = null;
@@ -71,8 +71,8 @@ public class GroundspeakLogin {
                     .setUri(LOGIN_URI)
                     .addParameter(new BasicNameValuePair(EVENT_TARGET_KEY, ""))
                     .addParameter(new BasicNameValuePair(EVENT_ARGUMENT_KEY, ""))
-                    .addParameter(new BasicNameValuePair(USERNAME_KEY, environment.getProperty("downloader.groundspeak.login")))
-                    .addParameter(new BasicNameValuePair(PASSWORD_KEY, environment.getProperty("downloader.groundspeak.password")))
+                    .addParameter(new BasicNameValuePair(USERNAME_KEY, configuration.getString("downloader.groundspeak.login")))
+                    .addParameter(new BasicNameValuePair(PASSWORD_KEY, configuration.getString("downloader.groundspeak.password")))
                     .addParameter(new BasicNameValuePair(REMEMBER_ME_KEY, "on"))
                     .addParameter(new BasicNameValuePair(SIGN_IN_KEY, "Login"))
                     .build();

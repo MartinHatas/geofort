@@ -1,6 +1,7 @@
 package cz.hatoff.geofort.feeder.querydownloader;
 
 import cz.hatoff.geofort.feeder.querychecker.CheckedPocketQuery;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -10,15 +11,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-import java.io.File;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,7 +40,7 @@ public class QueryDownloadGroundspeakService {
     private GroundspeakLogin groundspeakLogin;
 
     @Autowired
-    private Environment environment;
+    private PropertiesConfiguration configuration;
 
     @PostConstruct
     private void initDownloader() {
@@ -70,9 +68,9 @@ public class QueryDownloadGroundspeakService {
     }
 
     private void initThreadPool() {
-        String threadCountString = environment.getProperty("downloader.thread.pool.size");
-        logger.info(String.format("Initializing downloader tread pool with '%s' threads.", threadCountString));
-        threadPool = Executors.newFixedThreadPool(Integer.valueOf(threadCountString));
+        int threadCount = configuration.getInt("downloader.thread.pool.size");
+        logger.info(String.format("Initializing downloader tread pool with '%d' threads.", threadCount));
+        threadPool = Executors.newFixedThreadPool(threadCount);
     }
 
 

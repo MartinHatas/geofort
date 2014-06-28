@@ -1,14 +1,15 @@
 package cz.hatoff.geofort.feeder.queryuploader;
 
 import cz.hatoff.geofort.feeder.querydownloader.DownloadedPocketQuery;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -21,6 +22,7 @@ import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class QueryEmailSenderService {
@@ -35,7 +37,7 @@ public class QueryEmailSenderService {
     private BlockingQueue<DownloadedPocketQuery> downloadedPocketQueryQueue;
 
     @Autowired
-    private Environment environment;
+    private PropertiesConfiguration configuration;
 
     @PostConstruct
     private void initDownloader() {
@@ -44,9 +46,9 @@ public class QueryEmailSenderService {
     }
 
     private void initThreadPool() {
-        String threadCountString = environment.getProperty("uploader.thread.pool.size");
-        logger.info(String.format("Initializing uploader tread pool with '%s' threads.", threadCountString));
-        threadPool = Executors.newFixedThreadPool(Integer.valueOf(threadCountString));
+        int threadCount = configuration.getInt("uploader.thread.pool.size");
+        logger.info(String.format("Initializing uploader tread pool with '%d' threads.", threadCount));
+        threadPool = Executors.newFixedThreadPool(threadCount);
     }
 
     private void initProcessThread() {
@@ -68,6 +70,13 @@ public class QueryEmailSenderService {
         new Thread(threadProcessor).start();
     }
 
+    @PreDestroy
+    private void closeDownloader() throws InterruptedException {
+        logger.info("Shutting down pocket query upload service. Waiting for running downloads with 30 second timeout.");
+        threadPool.shutdown();
+        threadPool.awaitTermination(30, TimeUnit.SECONDS);
+    }
+
     private class UploadPocketQueryTask implements Runnable {
 
         private DownloadedPocketQuery downloadedPocketQuery;
@@ -80,23 +89,23 @@ public class QueryEmailSenderService {
         public void run() {
 
             Properties props = new Properties();
-            props.put("mail.smtp.host", environment.getProperty("uploader.email.server"));
-            props.put("mail.smtp.socketFactory.port", environment.getProperty("uploader.email.port"));
+            props.put("mail.smtp.host", configuration.getString("uploader.email.server"));
+            props.put("mail.smtp.socketFactory.port",configuration.getString("uploader.email.port"));
             props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
             props.put("mail.smtp.auth", "true");
-            props.put("mail.smtp.port", environment.getProperty("uploader.email.port"));
+            props.put("mail.smtp.port", configuration.getString("uploader.email.port"));
 
             Session session = Session.getDefaultInstance(props,
                     new javax.mail.Authenticator() {
                         protected PasswordAuthentication getPasswordAuthentication() {
-                            return new PasswordAuthentication(environment.getProperty("uploader.email.login"),environment.getProperty("uploader.email.password"));
+                            return new PasswordAuthentication(configuration.getString("uploader.email.login"), configuration.getString("uploader.email.password"));
                         }
                     });
 
             try {
                 logger.info("Going to send pocket query into store.");
                 Message message = new MimeMessage(session);
-                message.setFrom(new InternetAddress(environment.getProperty("uploader.email.login")));
+                message.setFrom(new InternetAddress(configuration.getString("uploader.email.login")));
                 message.setRecipients(Message.RecipientType.TO, InternetAddress.parse("browsil.pillow@gmail.com"));
                 message.setSubject(downloadedPocketQuery.getEmailSubject());
 

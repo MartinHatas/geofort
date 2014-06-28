@@ -1,7 +1,9 @@
 package cz.hatoff.geofort.feeder.querychecker;
 
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -20,12 +22,6 @@ public class PocketQueryEmailDownloader {
 
     private static final Logger logger = Logger.getLogger(PocketQueryEmailDownloader.class);
 
-    private static final String IMAP_SERVER = "imap.gmail.com";
-    private static final String USER_NAME = "ja.nejsem.opice@gmail.com";
-    private static final String PASSWORD = "RUMburak142.X";
-    private static final String PQ_FOLDER = "GEO";
-    private static final String PQ_FOLDER_DONE = "GEO-DONE";
-
     private final Properties properties = new Properties();
 
     private Set<Email> pocketQueryMessages = new HashSet<Email>();
@@ -34,13 +30,16 @@ public class PocketQueryEmailDownloader {
     private Folder pqDoneInbox;
     private Store store;
 
+    @Autowired
+    private PropertiesConfiguration configuration;
+
 
     public PocketQueryEmailDownloader() {
         properties.setProperty("mail.store.protocol", "imaps");
     }
 
     public Set<Email> downloadPocketQueryEmails() {
-        logger.info(String.format("Going to check for new incoming pocket queries at '%s' in the '%s' folder.", USER_NAME, PQ_FOLDER));
+        logger.info(String.format("Going to check for new incoming pocket queries at '%s' in the '%s' folder.", configuration.getString("checker.email.login"), configuration.getString("checker.email.pq.folder")));
         try {
             connectToStore();
             openFolders();
@@ -57,13 +56,13 @@ public class PocketQueryEmailDownloader {
         if (pqInbox.getMessageCount() > 0) {
             resolvePQEmails();
         } else {
-            logger.info(String.format("No new PQ emails detected in folder '%s'.", PQ_FOLDER));
+            logger.info(String.format("No new PQ emails detected in folder '%s'.", configuration.getString("checker.email.pq.folder")));
         }
     }
 
     private void resolvePQEmails() throws Exception {
         Message[] allEmailMessages = pqInbox.getMessages();
-        logger.info(String.format("Found '%d' new messages inside '%s' folder." , allEmailMessages.length, PQ_FOLDER));
+        logger.info(String.format("Found '%d' new messages inside '%s' folder." , allEmailMessages.length, configuration.getString("checker.email.pq.folder")));
         for (Message message : allEmailMessages) {
             resolveIfPocketQuery(message);
         }
@@ -71,7 +70,7 @@ public class PocketQueryEmailDownloader {
     }
 
     private void copyProcessedMessagesToAnotherFolder(Message[] allEmailMessages) throws MessagingException {
-        logger.info(String.format("Copying '%d' messages into '%s' folder.", pocketQueryMessages.size(), PQ_FOLDER_DONE));
+        logger.info(String.format("Copying '%d' messages into '%s' folder.", pocketQueryMessages.size(), configuration.getString("checker.email.pq.folder.done")));
         pqInbox.copyMessages(allEmailMessages, pqDoneInbox);
     }
 
@@ -86,24 +85,24 @@ public class PocketQueryEmailDownloader {
     }
 
     private void openFolders() throws MessagingException {
-        pqInbox = store.getFolder(PQ_FOLDER);
-        pqDoneInbox = store.getFolder(PQ_FOLDER_DONE);
+        pqInbox = store.getFolder(configuration.getString("checker.email.pq.folder"));
+        pqDoneInbox = store.getFolder(configuration.getString("checker.email.pq.folder.done"));
         if (!pqInbox.exists()) {
-            logger.info(String.format("Folder where are expected new PQs '%s' does not exist. Making new direcory '%s'.", PQ_FOLDER, PQ_FOLDER));
+            logger.info(String.format("Folder where are expected new PQs '%s' does not exist. Making new direcory '%s'.", configuration.getString("checker.email.pq.folder"), configuration.getString("checker.email.pq.folder")));
             pqInbox.create(Folder.HOLDS_MESSAGES);
         }
         if (!pqDoneInbox.exists()) {
-            logger.info(String.format("Folder where are expected new PQs '%s' does not exist. Making new direcory '%s'.", PQ_FOLDER_DONE, PQ_FOLDER_DONE));
+            logger.info(String.format("Folder where are expected new PQs '%s' does not exist. Making new direcory '%s'.", configuration.getString("checker.email.pq.folder.done"), configuration.getString("checker.email.pq.folder.done")));
             pqDoneInbox.create(Folder.HOLDS_MESSAGES);
         }
         pqInbox.open(Folder.READ_WRITE);
     }
 
     private void connectToStore() throws MessagingException {
-        logger.info(String.format("Connecting to store '%s' ... ", IMAP_SERVER));
+        logger.info(String.format("Connecting to store '%s' ... ", configuration.getString("checker.email.server")));
         Session session = Session.getInstance(properties, null);
         store = session.getStore();
-        store.connect(IMAP_SERVER, USER_NAME, PASSWORD);
+        store.connect(configuration.getString("checker.email.server"), configuration.getString("checker.email.login"), configuration.getString("checker.email.password"));
     }
 
     private void closeStore() {
