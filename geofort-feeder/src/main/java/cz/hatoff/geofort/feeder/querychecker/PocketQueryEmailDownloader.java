@@ -54,6 +54,14 @@ public class PocketQueryEmailDownloader {
     }
 
     private void lookForNewEmails() throws Exception {
+        if (pqInbox.getMessageCount() > 0) {
+            resolvePQEmails();
+        } else {
+            logger.info(String.format("No new PQ emails detected in folder '%s'.", PQ_FOLDER));
+        }
+    }
+
+    private void resolvePQEmails() throws Exception {
         Message[] allEmailMessages = pqInbox.getMessages();
         logger.info(String.format("Found '%d' new messages inside '%s' folder." , allEmailMessages.length, PQ_FOLDER));
         for (Message message : allEmailMessages) {
@@ -73,12 +81,21 @@ public class PocketQueryEmailDownloader {
         if (matcher.find()){
             logger.info(String.format("Email from '%s' with subject '%s' is OK!", StringUtils.join(message.getFrom(), ", "), message.getSubject()));
             pocketQueryMessages.add(new Email(StringUtils.join(message.getFrom(), ", "), message.getSubject(), (String) message.getContent(), message.getSentDate()));
+            message.setFlag(Flags.Flag.DELETED, true);
         }
     }
 
     private void openFolders() throws MessagingException {
         pqInbox = store.getFolder(PQ_FOLDER);
         pqDoneInbox = store.getFolder(PQ_FOLDER_DONE);
+        if (!pqInbox.exists()) {
+            logger.info(String.format("Folder where are expected new PQs '%s' does not exist. Making new direcory '%s'.", PQ_FOLDER, PQ_FOLDER));
+            pqInbox.create(Folder.HOLDS_MESSAGES);
+        }
+        if (!pqDoneInbox.exists()) {
+            logger.info(String.format("Folder where are expected new PQs '%s' does not exist. Making new direcory '%s'.", PQ_FOLDER_DONE, PQ_FOLDER_DONE));
+            pqDoneInbox.create(Folder.HOLDS_MESSAGES);
+        }
         pqInbox.open(Folder.READ_WRITE);
     }
 

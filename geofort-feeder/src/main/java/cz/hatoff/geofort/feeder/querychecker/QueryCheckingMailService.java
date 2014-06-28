@@ -32,9 +32,11 @@ public class QueryCheckingMailService {
     public void checkForNewLinks() throws InterruptedException {
         logger.info("Checking for new links.");
         Set<Email> emails = pocketQueryEmailDownloader.downloadPocketQueryEmails();
-        Set<CheckedPocketQuery> pocketQueries = pocketQueryEmailParser.parseMessagesToPocketQueries(emails);
-        for (CheckedPocketQuery pocketQuery : pocketQueries) {
-            checkedPocketQueryQueue.put(pocketQuery);
+        if (!emails.isEmpty()) {
+            Set<CheckedPocketQuery> pocketQueries = pocketQueryEmailParser.parseMessagesToPocketQueries(emails);
+            for (CheckedPocketQuery pocketQuery : pocketQueries) {
+                checkedPocketQueryQueue.put(pocketQuery);
+            }
         }
     }
 
