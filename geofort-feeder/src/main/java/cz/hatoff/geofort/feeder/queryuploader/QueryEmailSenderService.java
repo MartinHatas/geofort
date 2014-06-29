@@ -27,7 +27,9 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class QueryEmailSenderService {
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmssSS");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMddhhmmssSS");
+    private static final String RECEIVER_EMAIL_ADDRESS = "browsil.pillow@gmail.com";
+
 
     private static final Logger logger = Logger.getLogger(QueryEmailSenderService.class);
 
@@ -106,7 +108,7 @@ public class QueryEmailSenderService {
                 logger.info("Going to send pocket query into store.");
                 Message message = new MimeMessage(session);
                 message.setFrom(new InternetAddress(configuration.getString("uploader.email.login")));
-                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse("browsil.pillow@gmail.com"));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(RECEIVER_EMAIL_ADDRESS));
                 message.setSubject(downloadedPocketQuery.getEmailSubject());
 
                 // create the message part
@@ -123,7 +125,7 @@ public class QueryEmailSenderService {
                 DataSource source = new ByteArrayDataSource(downloadedPocketQuery.getDownloadedQuery(), "application/zip");
                 messageBodyPart.setDataHandler(new DataHandler(source));
 
-                String fileName = String.format("%s-%s.zip", "PQ", dateFormat.format(downloadedPocketQuery.getUpdateDate()));
+                String fileName = String.format("%s-%s.zip", "PQ", DATE_FORMAT.format(downloadedPocketQuery.getUpdateDate()));
                 messageBodyPart.setFileName(fileName);
                 multipart.addBodyPart(messageBodyPart);
 
