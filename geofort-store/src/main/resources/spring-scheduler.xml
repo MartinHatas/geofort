@@ -4,8 +4,8 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
 
-    <!--<task:scheduled-tasks >-->
-        <!--<task:scheduled ref="queryCheckingGmailService" method="checkForNewLinks" cron="*/20 * * * * *" />-->
-    <!--</task:scheduled-tasks>-->
+    <task:scheduled-tasks >
+        <task:scheduled ref="queryCheckingMailService" method="checkForNewLinks" cron="*/20 * * * * *" />
+    </task:scheduled-tasks>
 
 </beans>

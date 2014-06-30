@@ -1,22 +1,22 @@
-package cz.hatoff.geofort.feeder;
+package cz.hatoff.geofort.store;
 
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class FeederApplication {
+public class StoreApplication {
 
-    private static final Logger logger = Logger.getLogger(FeederApplication.class);
+    private static final Logger logger = Logger.getLogger(StoreApplication.class);
 
     private ApplicationContext context;
 
     public static void main(String[] args) {
-        new FeederApplication().start();
+        new StoreApplication().start();
     }
 
     private void start() {
-        logger.info("Starting GEOFORT FEEDER.");
+        logger.info("Starting GEOFORT STORE.");
         logger.info("Loading application context and initializing singletons.");
         context = new ClassPathXmlApplicationContext("spring-config.xml");
         Runtime.getRuntime().addShutdownHook(new Thread(){

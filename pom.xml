@@ -17,7 +17,6 @@
 
     <modules>
         <module>geofort-feeder</module>
-        <module>geofort-entity</module>
         <module>geofort-store</module>
     </modules>
 

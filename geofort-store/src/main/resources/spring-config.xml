@@ -9,6 +9,7 @@
 
     <!-- Context definition-->
     <context:annotation-config />
+    <context:component-scan base-package="cz.hatoff.geofort.store.checker"/>
     <context:component-scan base-package="cz.hatoff.geofort.store.unzipper"/>
     <context:component-scan base-package="cz.hatoff.geofort.store.parser"/>
     <context:property-placeholder location="classpath:datasource.properties"/>
@@ -18,7 +19,7 @@
 
     <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
         <property name="dataSource" ref="dataSource" />
-        <property name="packagesToScan" value="cz.hatoff.geofort.entity" />
+        <property name="packagesToScan" value="cz.hatoff.geofort.store.entity" />
         <property name="hibernateProperties">
             <props>
                 <prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
