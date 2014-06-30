@@ -98,8 +98,6 @@ public class PocketQueryUnzipService {
             pqDir.mkdirs();
             logger.info(String.format("Starting to unzip into directory '%s' - '%s'", pqDir.getAbsolutePath(), email));
 
-
-
             ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(email.getZipArchive()));
             ZipEntry entry = null;
             try {
