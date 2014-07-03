@@ -1,7 +1,11 @@
 package cz.hatoff.geofort.store.parser;
 
+import cz.hatoff.geofort.store.crawlers.elasticsearch.ElasticsearchCacheDocument;
 import cz.hatoff.geofort.store.entity.Cache;
 import cz.hatoff.geofort.store.unzipper.UnzippedPocketQuery;
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -21,16 +25,14 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
+
 import net.sf.json.xml.XMLSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -52,11 +54,11 @@ public class ParserServiceImpl {
     @Resource(name = "unzippedQueryQueue")
     private BlockingQueue<UnzippedPocketQuery> unzippedPocketQueryQueue;
 
-    @Resource(name = "parsedQueryQueue")
-    private BlockingQueue<ParsedPocketQuery> parsedPocketQueryQueue;
-
     @Resource(name = "dbCrawlerQueue")
     private BlockingQueue<List<Cache>> dbCrawlerQueue;
+
+    @Resource(name = "esCrawlerQueue")
+    public BlockingQueue<List<ElasticsearchCacheDocument>> esCrawlerQueue;
 
     @Autowired
     private Environment environment;
@@ -117,6 +119,7 @@ public class ParserServiceImpl {
         @Override
         public void run() {
             File cacheFile = getCacheFile();
+            logger.info(String.format("Going to parse PQ file '%s'", cacheFile.getAbsolutePath()));
             FileInputStream inputStream = null;
             try {
                 inputStream = FileUtils.openInputStream(cacheFile);
@@ -127,31 +130,55 @@ public class ParserServiceImpl {
 
 
                 ArrayList<Cache> caches = new ArrayList<Cache>(20);
+                ArrayList<ElasticsearchCacheDocument> cacheDocuments = new ArrayList<ElasticsearchCacheDocument>(20);
 
                 NodeList wpts = doc.getElementsByTagName("wpt");
                 int wptsLength = wpts.getLength();
                 for (int i = 0; i < wptsLength; i++) {
-                    Node wpt = wpts.item(i);
+                    try {
+                        Node wpt = wpts.item(i);
 
-                    String code = wpt.getChildNodes().item(3).getTextContent();
-                    StringWriter writer = new StringWriter();
-                    transformer.transform(new DOMSource(wpt), new StreamResult(writer));
+                        String code = wpt.getChildNodes().item(3).getTextContent();
+                        StringWriter writer = new StringWriter();
+                        transformer.transform(new DOMSource(wpt), new StreamResult(writer));
+                        byte[] cacheXMLbytes = writer.toString().getBytes("UTF-8");
 
-                    Cache cache = new Cache();
-                    cache.setCode(code);
-                    cache.setGpx(writer.toString().getBytes("UTF-8"));
-                    cache.setLastUpdate(new Date());
+                        Cache cache = new Cache();
+                        cache.setCode(code);
+                        cache.setGpx(cacheXMLbytes);
+                        cache.setLastUpdate(new Date());
 
-                    caches.add(cache);
+
+                        XMLSerializer xmlSerializer = new XMLSerializer();
+                        JSONObject json = (JSONObject) xmlSerializer.readFromStream(new ByteArrayInputStream(cacheXMLbytes));
+                        String latitude = json.getString("@lat");
+                        String longitude = json.getString("@lon");
+                        JSONArray coordinates = new JSONArray();
+                        coordinates.add(longitude);
+                        coordinates.add(latitude);
+                        json.put("geofort:coordinates", coordinates);
+                        ElasticsearchCacheDocument cacheDocument = new ElasticsearchCacheDocument();
+                        cacheDocument.setCode(code);
+                        cacheDocument.setJson(json.toString());
+
+                        caches.add(cache);
+                        cacheDocuments.add(cacheDocument);
+
+                    } catch (Exception e) {
+                        logger.error(e);
+                    }
 
                     if (i % 20 == 0) {
                         dbCrawlerQueue.add(new ArrayList<Cache>(caches));
+                        esCrawlerQueue.add(new ArrayList<ElasticsearchCacheDocument>(cacheDocuments));
                         caches.clear();
+                        cacheDocuments.clear();
                     }
                 }
 
                 if (!caches.isEmpty()) {
                     dbCrawlerQueue.add(new ArrayList<Cache>(caches));
+                    esCrawlerQueue.add(new ArrayList<ElasticsearchCacheDocument>(cacheDocuments));
                 }
 
 

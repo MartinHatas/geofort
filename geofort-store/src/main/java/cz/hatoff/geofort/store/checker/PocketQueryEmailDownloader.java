@@ -91,7 +91,7 @@ public class PocketQueryEmailDownloader {
                 logger.warn(String.format("Found email '%s' without attachment with subject '%s'.", StringUtils.join(message.getFrom(), ", "), message.getSubject()));
             }
             logger.info(String.format("Deleting email '%s' with subject '%s'.", StringUtils.join(message.getFrom(), ", "), message.getSubject()));
-          //  message.setFlag(Flags.Flag.DELETED, true);
+//            message.setFlag(Flags.Flag.DELETED, true);
         }
     }
 
