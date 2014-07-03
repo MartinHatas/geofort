@@ -1,6 +1,7 @@
 package cz.hatoff.geofort.store.crawlers.database;
 
 import cz.hatoff.geofort.store.entity.Cache;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -39,7 +40,7 @@ public class DatabaseCrawler {
 
     private void initThreadPool() {
         String threadCountString = environment.getProperty("crawler.database.thread.pool.size");
-        logger.info(String.format("Initializing unzipper tread pool with '%s' threads.", threadCountString));
+        logger.info(String.format("Initializing database crawler tread pool with '%s' threads.", threadCountString));
         threadPool = Executors.newFixedThreadPool(Integer.valueOf(threadCountString));
     }
 
@@ -50,7 +51,6 @@ public class DatabaseCrawler {
                 while (true) {
                     try {
                         List<Cache> caches = dbCrawlerQueue.take();
-                       // logger.info(String.format("Taking parsed cache from queue '%s'. Creating new insert task.", cache.toString()));
                         threadPool.submit(new DatabaseInsertTask(caches));
                     } catch (InterruptedException e) {
                         logger.error(e);
@@ -61,11 +61,9 @@ public class DatabaseCrawler {
         new Thread(threadProcessor).start();
     }
 
-
-
     @PreDestroy
-    private void closeUnzipper() throws InterruptedException {
-        logger.info("Shutting down pocket query unzip service. Waiting for running downloads with 30 second timeout.");
+    private void destroyDatabaseCrawler() throws InterruptedException {
+        logger.info("Shutting database crawler service. Waiting for running downloads with 30 second timeout.");
         threadPool.shutdown();
         threadPool.awaitTermination(30, TimeUnit.SECONDS);
     }
@@ -80,6 +78,8 @@ public class DatabaseCrawler {
 
         @Override
         public void run() {
+            String cachesString = StringUtils.join(caches, ", ");
+            logger.info(String.format("Going to update database by '%s'", cachesString));
             Session session = null;
             Transaction transaction = null;
             try {
@@ -89,7 +89,7 @@ public class DatabaseCrawler {
                     session.saveOrUpdate(cache);
                 }
                 transaction.commit();
-
+                logger.info("Update of database OK!");
             } catch (RuntimeException e) {
                 logger.error(e);
                 if (transaction != null) {
@@ -99,11 +99,7 @@ public class DatabaseCrawler {
                 if (session != null) {
                     session.close();
                 }
-
             }
-
-
-
         }
     }
 }

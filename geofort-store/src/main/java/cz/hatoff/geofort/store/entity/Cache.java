@@ -62,4 +62,12 @@ public class Cache {
         result = 31 * result + (lastUpdate != null ? lastUpdate.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Cache{" +
+                "code='" + code + '\'' +
+                ", lastUpdate=" + lastUpdate +
+                '}';
+    }
 }

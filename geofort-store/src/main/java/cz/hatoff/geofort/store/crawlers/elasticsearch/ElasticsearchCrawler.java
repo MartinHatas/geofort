@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 @Component
@@ -53,7 +54,7 @@ public class ElasticsearchCrawler {
 
     private void initThreadPool() {
         String threadCountString = environment.getProperty("crawler.elasticsearch.thread.pool.size");
-        logger.info(String.format("Initializing elasticsearch crawler tread pool with '%s' threads.", threadCountString));
+        logger.info(String.format("Initializing elastic-search crawler tread pool with '%s' threads.", threadCountString));
         threadPool = Executors.newFixedThreadPool(Integer.valueOf(threadCountString));
     }
 
@@ -76,10 +77,13 @@ public class ElasticsearchCrawler {
     }
 
     @PreDestroy
-    private void onDestroy(){
+    private void onDestroy() throws InterruptedException {
+        logger.info("Shutting down elastic-search crawler service. Waiting for running downloads with 30 second timeout.");
         if (client != null) {
             client.close();
         }
+        threadPool.shutdown();
+        threadPool.awaitTermination(30, TimeUnit.SECONDS);
     }
 
     private class ElasticsearchUpdateTask implements Runnable {
@@ -100,6 +104,7 @@ public class ElasticsearchCrawler {
             }
             try {
                 bulkRequest.execute().get();
+                logger.info("Update of index OK!");
             } catch (Exception e) {
                 logger.error(e);
             }
