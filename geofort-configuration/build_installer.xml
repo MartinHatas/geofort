@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<project name="build_installer">
+
+    <target name="build_installer">
+        <echo message="Staring building GEOFORT installer."/>
+
+        <echo message="Cleaning up previous installer if exists."/>
+        <mkdir dir="../installer_dir" />
+
+        <echo message="Copying default file structure."/>
+        <copy todir="../installer_dir/extracted">
+            <fileset dir="install_dir" includes="**"/>
+        </copy>
+
+        <echo message="Copying geofort-feeder java archive file to directory structure."/>
+        <copy todir="../installer_dir/extracted/geofort-feeder">
+            <fileset file="../geofort-feeder/target/geofort-feeder.jar"/>
+        </copy>
+
+        <echo message="Copying geofort-store java archive file to directory structure."/>
+        <copy todir="../installer_dir/extracted/geofort-store">
+            <fileset file="../geofort-store/target/geofort-store.jar"/>
+        </copy>
+
+
+        <echo message="Making a ZIP archive of whole project."/>
+        <zip destfile="../installer_dir/geofort.zip">
+            <zipfileset dir="../installer_dir/extracted"/>
+        </zip>
+
+        <!--<echo message="Copying installer executables."/>-->
+        <!--<copy todir="../installer_dir/">-->
+            <!--<fileset file="../analyst-installer/src/installer_exec/install.bat"/>-->
+            <!--<fileset file="../analyst-installer/src/installer_exec/install.sh"/>-->
+            <!--<fileset file="../analyst-installer/target/install.jar"/>-->
+        <!--</copy>-->
+
+        <!--<echo message="Deleting temporary folder."/>-->
+        <!--<delete includeemptydirs="true">-->
+            <!--<fileset dir="../installer_dir/extracted" defaultexcludes="false"/>-->
+        <!--</delete>-->
+
+    </target>
+
+</project>
