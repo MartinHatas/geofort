@@ -12,14 +12,22 @@
             <fileset dir="install_dir" includes="**"/>
         </copy>
 
-        <echo message="Copying geofort-feeder java archive file to directory structure."/>
+        <echo message="Assembling geofort-feeder application files to directory structure."/>
         <copy todir="../installer_dir/extracted/geofort-feeder">
             <fileset file="../geofort-feeder/target/geofort-feeder.jar"/>
+            <fileset file="../geofort-feeder/target/geofort-feeder.exe"/>
+            <fileset file="../geofort-feeder/src/main/resources/application.properties"/>
+            <fileset file="../geofort-feeder/src/main/resources/log4j.properties"/>
         </copy>
 
-        <echo message="Copying geofort-store java archive file to directory structure."/>
+
+        <echo message="Assembling geofort-store application files to directory structure."/>
         <copy todir="../installer_dir/extracted/geofort-store">
             <fileset file="../geofort-store/target/geofort-store.jar"/>
+            <fileset file="../geofort-store/target/geofort-store.exe"/>
+            <fileset file="../geofort-store/src/main/resources/application.properties"/>
+            <fileset file="../geofort-store/src/main/resources/log4j.properties"/>
+            <fileset file="../geofort-store/src/main/resources/datasource.properties"/>
         </copy>
 
 

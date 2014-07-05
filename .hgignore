@@ -4,3 +4,4 @@ target*
 *.iml
 geofort-feeder.log
 *.lock
+installer_dir/*
