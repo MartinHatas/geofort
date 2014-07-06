@@ -180,6 +180,7 @@ public class ParserServiceImpl {
                 logger.error(e);
             } finally {
                 IOUtils.closeQuietly(inputStream);
+                FileUtils.deleteQuietly(unzippedPocketQuery.getPqDirectory());
             }
         }
 
