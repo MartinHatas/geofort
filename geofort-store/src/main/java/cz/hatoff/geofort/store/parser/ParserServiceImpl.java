@@ -3,14 +3,12 @@ package cz.hatoff.geofort.store.parser;
 import cz.hatoff.geofort.store.crawlers.elasticsearch.ElasticsearchCacheDocument;
 import cz.hatoff.geofort.store.entity.Cache;
 import cz.hatoff.geofort.store.unzipper.UnzippedPocketQuery;
-import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -18,8 +16,6 @@ import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
@@ -31,7 +27,6 @@ import net.sf.json.xml.XMLSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -60,8 +55,8 @@ public class ParserServiceImpl {
     @Resource(name = "esCrawlerQueue")
     public BlockingQueue<List<ElasticsearchCacheDocument>> esCrawlerQueue;
 
-    @Autowired
-    private Environment environment;
+    @Value("${parser.thread.pool.size}")
+    private int threadCount;
 
     @PostConstruct
     private void initDownloader() {
@@ -70,9 +65,8 @@ public class ParserServiceImpl {
     }
 
     private void initThreadPool() {
-        String threadCountString = environment.getProperty("parser.thread.pool.size");
-        logger.info(String.format("Initializing parser tread pool with '%s' threads.", threadCountString));
-        threadPool = Executors.newFixedThreadPool(Integer.valueOf(threadCountString));
+        logger.info(String.format("Initializing parser tread pool with '%d' threads.", threadCount));
+        threadPool = Executors.newFixedThreadPool(threadCount);
     }
 
     private void initProcessThread() {

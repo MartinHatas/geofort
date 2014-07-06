@@ -8,8 +8,7 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -32,10 +31,22 @@ public class ElasticsearchCrawler {
 
     private ExecutorService threadPool;
 
-    @Autowired
-    private Environment environment;
-
     private Client client;
+
+    @Value("${crawler.elasticsearch.thread.pool.size}")
+    private int threadCount;
+
+    @Value("${crawler.elasticsearch.cluster.name}")
+    private String clusterName;
+
+    @Value("${crawler.elasticsearch.index.name}")
+    private String indexName;
+
+    @Value("${crawler.elasticsearch.network.host}")
+    private String clusterHost;
+
+    @Value("${crawler.elasticsearch.network.port}")
+    private int clusterPort;
 
     @PostConstruct
     private void init(){
@@ -46,16 +57,15 @@ public class ElasticsearchCrawler {
 
     private void initElasticSearchNode() {
         Settings settings = ImmutableSettings.settingsBuilder()
-                .put("cluster.name", environment.getProperty("crawler.elasticsearch.cluster.name")).build();
+                .put("cluster.name", clusterName).build();
         client = new TransportClient(settings)
-                .addTransportAddress(new InetSocketTransportAddress(environment.getProperty("crawler.elasticsearch.network.host"), Integer.parseInt(environment.getProperty("crawler.elasticsearch.network.port"))));
+                .addTransportAddress(new InetSocketTransportAddress(clusterHost, clusterPort));
 
     }
 
     private void initThreadPool() {
-        String threadCountString = environment.getProperty("crawler.elasticsearch.thread.pool.size");
-        logger.info(String.format("Initializing elastic-search crawler tread pool with '%s' threads.", threadCountString));
-        threadPool = Executors.newFixedThreadPool(Integer.valueOf(threadCountString));
+        logger.info(String.format("Initializing elastic-search crawler tread pool with '%d' threads.", threadCount));
+        threadPool = Executors.newFixedThreadPool(threadCount);
     }
 
 
@@ -100,7 +110,7 @@ public class ElasticsearchCrawler {
             logger.info(String.format("Going to update index by '%s'", cachesString));
             BulkRequestBuilder bulkRequest = client.prepareBulk();
             for (ElasticsearchCacheDocument cache : caches) {
-                bulkRequest.add(client.prepareIndex(environment.getProperty("crawler.elasticsearch.index.name"), cache.getType(), cache.getCode()).setSource(cache.getJson()));
+                bulkRequest.add(client.prepareIndex(indexName, cache.getType(), cache.getCode()).setSource(cache.getJson()));
             }
             try {
                 bulkRequest.execute().get();

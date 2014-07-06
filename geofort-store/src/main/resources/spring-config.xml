@@ -13,7 +13,12 @@
     <context:component-scan base-package="cz.hatoff.geofort.store.unzipper"/>
     <context:component-scan base-package="cz.hatoff.geofort.store.parser"/>
     <context:component-scan base-package="cz.hatoff.geofort.store.crawlers*"/>
-    <context:property-placeholder location="classpath:datasource.properties"/>
+
+    <context:property-placeholder location="file:geofort-store/src/main/config/datasource.properties" order="-1" ignore-unresolvable="true" ignore-resource-not-found="true"/>
+    <context:property-placeholder location="file:../config/datasource.properties" order="-1" ignore-unresolvable="true" ignore-resource-not-found="true"/>
+
+    <context:property-placeholder location="file:geofort-store/src/main/config/application.properties" order="1" ignore-unresolvable="true" ignore-resource-not-found="true"/>
+    <context:property-placeholder location="file:../config/application.properties" order="1" ignore-unresolvable="true" ignore-resource-not-found="true"/>
 
     <!-- Configuration beans-->
     <bean class="cz.hatoff.geofort.store.configuration.QueueConfiguration"/>

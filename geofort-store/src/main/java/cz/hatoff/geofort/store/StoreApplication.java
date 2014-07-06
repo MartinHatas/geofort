@@ -25,6 +25,16 @@ public class StoreApplication {
                 ((AbstractApplicationContext) context).close();
             }
         });
-
     }
+
+    public static void start(String[] params) {
+        logger.info("Geofort store starting as windows service.");
+        new StoreApplication().start();
+    }
+
+    public static void stop(String[] params) {
+        logger.info("Geofort store closing as windows service.");
+        System.exit(0);
+    }
+
 }

@@ -7,7 +7,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -27,10 +27,10 @@ public class DatabaseCrawler {
     private ExecutorService threadPool;
 
     @Autowired
-    private Environment environment;
-
-    @Autowired
     private SessionFactory sessionFactory;
+
+    @Value("${crawler.database.thread.pool.size}")
+    private int threadCount;
 
     @PostConstruct
     private void initDownloader() {
@@ -39,9 +39,8 @@ public class DatabaseCrawler {
     }
 
     private void initThreadPool() {
-        String threadCountString = environment.getProperty("crawler.database.thread.pool.size");
-        logger.info(String.format("Initializing database crawler tread pool with '%s' threads.", threadCountString));
-        threadPool = Executors.newFixedThreadPool(Integer.valueOf(threadCountString));
+        logger.info(String.format("Initializing database crawler tread pool with '%d' threads.", threadCount));
+        threadPool = Executors.newFixedThreadPool(threadCount);
     }
 
     private void initProcessThread() {

@@ -4,6 +4,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -36,15 +37,21 @@ public class PocketQueryEmailDownloader {
     private Folder pqInbox;
     private Store store;
 
-    @Autowired
-    private Environment environment;
+    @Value("${downloader.email.server}")
+    private String downloadEmailServer;
+
+    @Value("${downloader.email.login}")
+    private String downloadEmailLogin;
+
+    @Value("${downloader.email.password}")
+    private String downloadEmailPassword;
 
     public PocketQueryEmailDownloader() {
         properties.setProperty("mail.store.protocol", "imaps");
     }
 
     public void downloadPocketQueryEmails() {
-        logger.info(String.format("Going to check for new incoming pocket queries at '%s' in the '%s' folder.", environment.getProperty("downloader.email.login"), FOLDER));
+        logger.info(String.format("Going to check for new incoming pocket queries at '%s' in the '%s' folder.", downloadEmailLogin, FOLDER));
         try {
             connectToStore();
             openFolders();
@@ -116,10 +123,10 @@ public class PocketQueryEmailDownloader {
     }
 
     private void connectToStore() throws MessagingException {
-        logger.info(String.format("Connecting to store '%s' ... ", environment.getProperty("downloader.email.server")));
+        logger.info(String.format("Connecting to store '%s' ... ", downloadEmailServer));
         Session session = Session.getInstance(properties, null);
         store = session.getStore();
-        store.connect(environment.getProperty("downloader.email.server"), environment.getProperty("downloader.email.login"), environment.getProperty("downloader.email.password"));
+        store.connect(downloadEmailServer, downloadEmailLogin, downloadEmailPassword);
     }
 
     private void closeStore() {

@@ -135,44 +135,6 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>com.akathist.maven.plugins.launch4j</groupId>
-                <artifactId>launch4j-maven-plugin</artifactId>
-                <version>1.5.2</version>
-                <executions>
-                    <execution>
-                        <id>l4j-clui</id>
-                        <phase>package</phase>
-                        <goals><goal>launch4j</goal></goals>
-                        <configuration>
-                            <headerType>console</headerType>
-                            <outfile>target/geofort-feeder.exe</outfile>
-                            <jar>target/geofort-feeder.jar</jar>
-                            <errTitle>encc</errTitle>
-                            <classPath>
-                                <mainClass>cz.hatoff.geofort.feeder.FeederApplication</mainClass>
-                                <addDependencies>false</addDependencies>
-                                <preCp>anything</preCp>
-                            </classPath>
-                            <jre>
-                                <minVersion>1.7.0</minVersion>
-                            </jre>
-                            <versionInfo>
-                                <fileVersion>1.0.0.0</fileVersion>
-                                <txtFileVersion>${project.parent.version}</txtFileVersion>
-                                <fileDescription>Geofort feeder application</fileDescription>
-                                <productVersion>1.0.0.0</productVersion>
-                                <txtProductVersion>${project.parent.version}</txtProductVersion>
-                                <copyright>Hatoff</copyright>
-                                <productName>Geofort Feeder</productName>
-                                <internalName>geofort-feeder</internalName>
-                                <originalFilename>geofort-feeder.exe</originalFilename>
-                            </versionInfo>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
 </project>

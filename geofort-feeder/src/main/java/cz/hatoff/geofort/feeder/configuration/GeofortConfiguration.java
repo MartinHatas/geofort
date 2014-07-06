@@ -8,7 +8,6 @@ import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.log4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,13 +31,21 @@ public class GeofortConfiguration {
 
     @Bean
     public PropertiesConfiguration createConfiguration() throws ConfigurationException, FileNotFoundException {
-        File configurationFile = new File("application.properties");
-        if (!configurationFile.exists()) {
-            throw new FileNotFoundException(String.format("Unable to load configuration from file '%s'", configurationFile.getAbsolutePath()));
+        File configFile = new File("../config/application.properties");
+        if (!configFile.exists()) {
+            logger.warn(String.format("Unable to load configuration from file '%s', trying to load developer config.", configFile.getAbsolutePath()));
+            configFile = new File("geofort-feeder/src/main/config/application.properties");
         }
-        logger.info(String.format("Loading application configuration from file '%s'", configurationFile.getAbsolutePath()));
-        PropertiesConfiguration config = new PropertiesConfiguration("application.properties");
+
+        if (!configFile.exists()) {
+            throw new FileNotFoundException("No configuration file has been found.");
+        }
+
+        logger.info(String.format("Loading application configuration from file '%s'", configFile.getAbsolutePath()));
+
+        PropertiesConfiguration config = new PropertiesConfiguration(configFile);
         config.setReloadingStrategy(new FileChangedReloadingStrategy());
+
         return config;
     }
 

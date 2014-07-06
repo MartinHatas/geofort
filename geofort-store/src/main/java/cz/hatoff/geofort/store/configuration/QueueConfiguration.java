@@ -14,7 +14,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Configuration
-@PropertySource(value = "classpath:application.properties")
 public class QueueConfiguration {
 
     @Bean(name = "unzippedQueryQueue")

@@ -25,6 +25,15 @@ public class FeederApplication {
                 ((AbstractApplicationContext) context).close();
             }
         });
+    }
 
+    public static void start(String[] params) {
+        logger.info("Geofort feeder starting as windows service.");
+        new FeederApplication().start();
+    }
+
+    public static void stop(String[] params) {
+        logger.info("Geofort feeder closing as windows service.");
+        System.exit(0);
     }
 }

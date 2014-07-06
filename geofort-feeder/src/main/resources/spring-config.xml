@@ -17,7 +17,8 @@
     <!-- Configuration beans-->
     <bean class="cz.hatoff.geofort.feeder.configuration.GeofortConfiguration"/>
 
-    <context:property-placeholder location="file:application.properties" />
+    <context:property-placeholder location="file:geofort-feeder/src/main/config/application.properties" order="1" ignore-unresolvable="true" ignore-resource-not-found="true"/>
+    <context:property-placeholder location="file:../config/application.properties" order="1" ignore-unresolvable="true" ignore-resource-not-found="true"/>
 
 
 </beans>

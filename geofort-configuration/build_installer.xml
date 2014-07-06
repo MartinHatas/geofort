@@ -15,23 +15,19 @@
         <echo message="Assembling geofort-feeder application files to directory structure."/>
         <copy todir="../installer_dir/extracted/geofort-feeder/bin">
             <fileset file="../geofort-feeder/target/geofort-feeder.jar"/>
-            <fileset file="../geofort-feeder/target/geofort-feeder.exe"/>
         </copy>
         <copy todir="../installer_dir/extracted/geofort-feeder/config">
-            <fileset file="../geofort-feeder/src/main/resources/application.properties"/>
-            <fileset file="../geofort-feeder/src/main/resources/log4j.properties"/>
+            <fileset file="../geofort-feeder/src/main/config/application.properties"/>
         </copy>
 
 
         <echo message="Assembling geofort-store application files to directory structure."/>
         <copy todir="../installer_dir/extracted/geofort-store/bin">
             <fileset file="../geofort-store/target/geofort-store.jar"/>
-            <fileset file="../geofort-store/target/geofort-store.exe"/>
         </copy>
         <copy todir="../installer_dir/extracted/geofort-store/config">
-            <fileset file="../geofort-store/src/main/resources/application.properties"/>
-            <fileset file="../geofort-store/src/main/resources/log4j.properties"/>
-            <fileset file="../geofort-store/src/main/resources/datasource.properties"/>
+            <fileset file="../geofort-store/src/main/config/application.properties"/>
+            <fileset file="../geofort-store/src/main/config/datasource.properties"/>
         </copy>
 
 
