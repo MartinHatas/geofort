@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util" xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+    <!-- Context definition-->
+    <context:annotation-config />
+    <context:component-scan base-package="cz.hatoff.geofort.sequencer.generator"/>
+    <context:component-scan base-package="cz.hatoff.geofort.sequencer.downloader*"/>
+
+    <!-- Configuration beans-->
+    <bean class="cz.hatoff.geofort.sequencer.configuration.SequencerConfiguration"/>
+
+    <context:property-placeholder location="file:geofort-sequencer/src/main/config/application.properties" order="1" ignore-unresolvable="true" ignore-resource-not-found="true"/>
+    <context:property-placeholder location="file:../config/application.properties" order="1" ignore-unresolvable="true" ignore-resource-not-found="true"/>
+
+
+</beans>

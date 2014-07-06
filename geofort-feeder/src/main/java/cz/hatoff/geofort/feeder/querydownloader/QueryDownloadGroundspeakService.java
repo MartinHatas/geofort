@@ -93,7 +93,11 @@ public class QueryDownloadGroundspeakService {
         public void run() {
             logger.info(String.format("Going to download pocket query archive '%s'.", checkedPocketQuery));
             DownloadedPocketQuery downloadedPocketQuery = downloadPocketQueryArchive();
-            downloadedPocketQueryQueue.add(downloadedPocketQuery);
+            try {
+                downloadedPocketQueryQueue.put(downloadedPocketQuery);
+            } catch (InterruptedException e) {
+                logger.error(e);
+            }
         }
 
         private DownloadedPocketQuery downloadPocketQueryArchive() {
@@ -109,7 +113,6 @@ public class QueryDownloadGroundspeakService {
 
                 CloseableHttpResponse downloadResponse = httpClient.execute(downloadRequest);
                 InputStream pocketQueryStream = downloadResponse.getEntity().getContent();
-
                 pocketQueryBytes = IOUtils.toByteArray(pocketQueryStream);
 
             } catch (Exception e) {

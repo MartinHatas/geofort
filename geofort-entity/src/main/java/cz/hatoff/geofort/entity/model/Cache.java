@@ -1,4 +1,4 @@
-package cz.hatoff.geofort.store.entity;
+package cz.hatoff.geofort.entity.model;
 
 
 import javax.persistence.*;

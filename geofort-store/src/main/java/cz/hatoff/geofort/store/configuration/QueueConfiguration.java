@@ -1,13 +1,12 @@
 package cz.hatoff.geofort.store.configuration;
 
 
+import cz.hatoff.geofort.entity.model.Cache;
 import cz.hatoff.geofort.store.checker.Email;
 import cz.hatoff.geofort.store.crawlers.elasticsearch.ElasticsearchCacheDocument;
-import cz.hatoff.geofort.store.entity.Cache;
 import cz.hatoff.geofort.store.unzipper.UnzippedPocketQuery;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;

@@ -1,7 +1,7 @@
 package cz.hatoff.geofort.store.parser;
 
+import cz.hatoff.geofort.entity.model.Cache;
 import cz.hatoff.geofort.store.crawlers.elasticsearch.ElasticsearchCacheDocument;
-import cz.hatoff.geofort.store.entity.Cache;
 import cz.hatoff.geofort.store.unzipper.UnzippedPocketQuery;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

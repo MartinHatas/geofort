@@ -1,6 +1,6 @@
 package cz.hatoff.geofort.store.crawlers.database;
 
-import cz.hatoff.geofort.store.entity.Cache;
+import cz.hatoff.geofort.entity.model.Cache;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -14,7 +14,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class DatabaseCrawler {
