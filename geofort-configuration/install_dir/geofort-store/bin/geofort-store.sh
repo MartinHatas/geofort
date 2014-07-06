@@ -1,0 +1,1 @@
+java -jar geofort-store.jar
