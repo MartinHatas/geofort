@@ -5,7 +5,7 @@
 
 
     <task:scheduled-tasks >
-        <task:scheduled ref="queryCheckingMailService" method="checkForNewLinks" cron="*/20 * * * * *" />
+        <task:scheduled ref="queryCheckingMailService" method="checkForNewLinks" cron="0 */5 * * * *" />
     </task:scheduled-tasks>
 
 </beans>

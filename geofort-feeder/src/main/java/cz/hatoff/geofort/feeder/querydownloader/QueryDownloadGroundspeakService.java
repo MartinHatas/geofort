@@ -103,6 +103,8 @@ public class QueryDownloadGroundspeakService {
         private DownloadedPocketQuery downloadPocketQueryArchive() {
             CloseableHttpClient httpClient = null;
             byte[] pocketQueryBytes = new byte[0];
+            CloseableHttpResponse downloadResponse = null;
+            InputStream pocketQueryStream = null;
             try {
                 CookieStore cookieStore = groundspeakLogin.login();
                 httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
@@ -111,13 +113,14 @@ public class QueryDownloadGroundspeakService {
                         .setUri(checkedPocketQuery.getDownloadUrl().toURI())
                         .build();
 
-                CloseableHttpResponse downloadResponse = httpClient.execute(downloadRequest);
-                InputStream pocketQueryStream = downloadResponse.getEntity().getContent();
+                downloadResponse = httpClient.execute(downloadRequest);
+                pocketQueryStream = downloadResponse.getEntity().getContent();
                 pocketQueryBytes = IOUtils.toByteArray(pocketQueryStream);
-
             } catch (Exception e) {
                 logger.error(e);
             } finally {
+                IOUtils.closeQuietly(downloadResponse);
+                IOUtils.closeQuietly(pocketQueryStream);
                 IOUtils.closeQuietly(httpClient);
             }
             logger.info(String.format("Download of pocket query '%s' completed OK!", checkedPocketQuery.getQueryName()));

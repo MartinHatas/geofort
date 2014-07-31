@@ -4,6 +4,7 @@ package cz.hatoff.geofort.entity.model;
 import javax.persistence.*;
 import java.util.Date;
 
+
 @Entity
 @Table(name = "CACHE")
 public class Cache {

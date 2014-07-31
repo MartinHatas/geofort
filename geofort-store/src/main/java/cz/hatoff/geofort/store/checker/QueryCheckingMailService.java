@@ -21,7 +21,7 @@ public class QueryCheckingMailService {
     @Autowired
     private PocketQueryEmailDownloader pocketQueryEmailDownloader;
 
-    public void checkForNewLinks() throws InterruptedException {
+    public synchronized void checkForNewLinks() throws InterruptedException {
         logger.info("Checking for new links.");
         pocketQueryEmailDownloader.downloadPocketQueryEmails();
     }
